@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言复习一下动态链接的全过程，通过plt和got的延迟绑定详细过程，彻底理解了ret2dlresolve">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动态链接-ret2dlresolve">
+<meta property="og:url" content="http://example.com/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言复习一下动态链接的全过程，通过plt和got的延迟绑定详细过程，彻底理解了ret2dlresolve">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/05/18/YOFJqmD3vdfkrBw.png">
+<meta property="og:image" content="https://i.loli.net/2021/05/18/XCAMFiDcbsmY6GN.png">
+<meta property="article:published_time" content="2021-05-17T16:42:33.000Z">
+<meta property="article:modified_time" content="2021-05-17T16:58:19.989Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="ROP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/05/18/YOFJqmD3vdfkrBw.png">
+
+<link rel="canonical" href="http://example.com/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>动态链接-ret2dlresolve | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          动态链接-ret2dlresolve
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-05-18 00:42:33 / 修改时间：00:58:19" itemprop="dateCreated datePublished" datetime="2021-05-18T00:42:33+08:00">2021-05-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/" itemprop="url" rel="index"><span itemprop="name">pwn</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>复习一下动态链接的全过程，通过plt和got的延迟绑定详细过程，彻底理解了ret2dlresolve</p>
+<span id="more"></span>
+
+<h1 id="链接器"><a href="#链接器" class="headerlink" title="链接器"></a>链接器</h1><p>链接器作用：符号解析和重定位</p>
+<ol>
+<li>符号解析：将可重定位目标文件里的的符号引用对应符号表里一个确定的符号定义相关联，符号定义以符号表的形式存储在对象文件，完成了符号解析，就能够确定每个符号的位置，完成了符号解析，就能够确定每个符号的位置</li>
+<li>重定位：<ul>
+<li>重定位节和符号定义：将所有同类的节合并成一个聚合节，并赋予聚合节以及每个定义的符号生成可执行文件最终运行时内存地址。这一步完成，每条指令和符号都有了唯一的运行时内存地址</li>
+<li>重定位符号引用：链接器修改节和数据节中对每个符号的引用，使其指向正确的运行时地址。为了确定每个节中需要修改的符号引用地址，需要参考重定位条目</li>
+</ul>
+</li>
+</ol>
+<h1 id="动态链接"><a href="#动态链接" class="headerlink" title="动态链接"></a>动态链接</h1><p>动态链接分为隐式链接和显式链接</p>
+<img src="https://i.loli.net/2021/05/18/YOFJqmD3vdfkrBw.png" style="zoom:80%;" />
+
+<ul>
+<li><p>load-time dynamic linking(加载时动态链接，隐式链接)</p>
+</li>
+<li><ul>
+<li>指程序载入内存时加载所需的动态链接库</li>
+<li>当创建可执行文件的时候，只链接一些重定位和符号表信息，使程序运行时可解析共享库。可执行文件加载时才由动态链接器真正完成动态链接过程</li>
+</ul>
+</li>
+<li><p>run-time dynamic linking(运行时动态链接，显式链接)</p>
+<ul>
+<li><p>动态链接库不随程序加载进内存，只在程序运行时调用相关的API而载入或释放</p>
+</li>
+<li><p>应用程序可能再他运行时要求加载和链接某个共享库，而无需再编译时链接到应用中</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>当共享库装载进内存时，动态链接器重定位共享库，并修改可执行文件中的GOT（延迟绑定），需要用到两个表PLT和GOT</p>
+<h1 id="PLT和GOT"><a href="#PLT和GOT" class="headerlink" title="PLT和GOT"></a>PLT和GOT</h1><ul>
+<li>PLT过程链接表，是一个由0x10大小条目组成的数组，<strong>每个条目负责调用一个具体的函数</strong>。从plt[1]开始的条目负责调用代码里共享库函数。plt[0]比较特殊，跳转到动态链接器装载函数实际地址到got表</li>
+<li>got全局偏移表，GOT是一个<strong>保存函数实际地址数组</strong>，从GOT[3]开始每项为内存中函数的实际地址。GOT[0]和GOT[1]是动态链接器解析函数地址时使用的信息，GOT[2]是动态链接器入口点<ul>
+<li>got[0]：可执行文件.dynamic地址</li>
+<li>got[1]：link_map结构地址</li>
+<li>got[2]：动态链接器_dl_runtime_resolve()地址</li>
+</ul>
+</li>
+</ul>
+<p>除去PLT和GOT里特殊的表项，PLT与GOT每个表项都一一对应，为同一个函数服务</p>
+<img src="https://i.loli.net/2021/05/18/XCAMFiDcbsmY6GN.png" style="zoom:80%;" />
+
+<p>当程序调用一个共享库的函数时，需要在程序真正运行时才解析函数的实际地址。在可执行文件里调用的函数地址为plt表项的地址，plt在运行时解析函数地址并装载进got表之后，跳转到got表执行。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">080483d0 &lt;.text&gt;:</span><br><span class="line"> ···</span><br><span class="line"> 80484a9:	8d 45 94             	lea    -0x6c(%ebp),%eax</span><br><span class="line"> 80484ac:	89 44 24 04          	mov    %eax,0x4(%esp)</span><br><span class="line"> 80484b0:	c7 04 24 00 00 00 00 	movl   $0x0,(%esp)</span><br><span class="line"> 80484b7:	e8 d4 fe ff ff       	call   8048390 &lt;read@plt&gt;</span><br><span class="line"> 80484bc:	c9                   	leave  </span><br><span class="line"> 80484bd:	c3                   	ret  </span><br></pre></td></tr></table></figure>
+
+<p>plt每个plt条目大小为0x10，首条指令为跳转到对应的got表项地址，got表里的地址为函数在内存中的真正地址</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">08048380 &lt;setbuf@plt&gt;:</span><br><span class="line"> 8048380:	ff 25 00 a0 04 08    	jmp    *0x804a000</span><br><span class="line"> 8048386:	68 00 00 00 00       	push   $0x0</span><br><span class="line"> 804838b:	e9 e0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br><span class="line"></span><br><span class="line">08048390 &lt;read@plt&gt;:</span><br><span class="line"> 8048390:	ff 25 04 a0 04 08    	jmp    *0x804a004</span><br><span class="line"> 8048396:	68 08 00 00 00       	push   $0x8</span><br><span class="line"> 804839b:	e9 d0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br></pre></td></tr></table></figure>
+
+<p>在read@plt地址0x8048390下断点，运行程序，程序跳转到<a href="mailto:&#x72;&#x65;&#97;&#x64;&#64;&#103;&#111;&#116;&#46;&#112;&#108;&#116;">&#x72;&#x65;&#97;&#x64;&#64;&#103;&#111;&#116;&#46;&#112;&#108;&#116;</a>地址。</p>
+<ul>
+<li>由于是第一次调用read函数，got表里并没有填充read函数的真实地址，需要调用解析函数解析实际地址填充到got表里，而这个解析函数就由plt[0]调用，所以程序跳转回自己的plt表第二条指令</li>
+<li>0x08048396将read函数自身在.rel.plt表的偏移压栈（实际是偏移*8），作为解析函数的参数，随后跳转到plt[0]-0x8048370</li>
+<li>plt[0] 第一条指令0x8048370将 GOT[1]压栈，GOT[1]中存放了指向read()的 link_map 结构的偏移地址</li>
+<li>plt[0]第二条指令0x8048376跳转到GOT[2]存放的地址，该地址指向动态链接器的&lt;_dl_runtime_resolve&gt;函数，确定read()的地址，重写read的GOT表</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">─────────────────────────────────────[ DISASM]───────────────────────────────────</span><br><span class="line"> ► <span class="number">0x8048390</span>  &lt;read@plt&gt;              jmp    dword ptr [read@got.plt] &lt;<span class="number">0x804a004</span>&gt;</span><br><span class="line">   <span class="number">0x8048396</span>  &lt;read@plt+<span class="number">6</span>&gt;            push   <span class="number">8</span></span><br><span class="line">   <span class="number">0x804839b</span>  &lt;read@plt+<span class="number">11</span>&gt;           jmp    <span class="number">0x8048370</span> &lt;<span class="number">0x8048370</span>&gt;</span><br><span class="line">    ↓</span><br><span class="line">   <span class="number">0x8048370</span>  &lt;plt[<span class="number">0</span>]&gt;                push   dword ptr [<span class="number">0x8049ff8</span>]</span><br><span class="line">   <span class="number">0x8048376</span>                          jmp    dword ptr [<span class="number">0x8049ffc</span>] &lt;_dl_runtime_resolve&gt;</span><br><span class="line">    ↓</span><br><span class="line">   <span class="number">0xf7fee000</span> &lt;_dl_runtime_resolve&gt;   push   eax</span><br><span class="line">   <span class="number">0xf7fee000</span> &lt;_dl_runtime_resolve&gt;       push   eax</span><br><span class="line">   <span class="number">0xf7fee001</span> &lt;_dl_runtime_resolve+<span class="number">1</span>&gt;     push   ecx</span><br><span class="line">   <span class="number">0xf7fee002</span> &lt;_dl_runtime_resolve+<span class="number">2</span>&gt;     push   edx</span><br><span class="line">   <span class="number">0xf7fee003</span> &lt;_dl_runtime_resolve+<span class="number">3</span>&gt;     mov    edx, dword ptr [esp + <span class="number">0x10</span>]</span><br><span class="line">   <span class="number">0xf7fee007</span> &lt;_dl_runtime_resolve+<span class="number">7</span>&gt;     mov    eax, dword ptr [esp + <span class="number">0xc</span>]</span><br><span class="line">   <span class="number">0xf7fee00b</span> &lt;_dl_runtime_resolve+<span class="number">11</span>&gt;    call   _dl_fixup &lt;_dl_fixup&gt;</span><br><span class="line">─────────────────────────────────────────────────────────────────────────────────</span><br><span class="line">pwndbg&gt; plt</span><br><span class="line"><span class="number">0x8048380</span>: setbuf@plt</span><br><span class="line"><span class="number">0x8048390</span>: read@plt</span><br><span class="line"><span class="number">0x80483a0</span>: __gmon_start__@plt</span><br><span class="line"><span class="number">0x80483b0</span>: __libc_start_main@plt</span><br><span class="line"><span class="number">0x80483c0</span>: write@plt</span><br><span class="line">pwndbg&gt; got</span><br><span class="line">GOT protection: Partial RELRO | GOT functions: <span class="number">5</span></span><br><span class="line">[0x804a000] setbuf@GLIBC_2.0 -&gt; 0xf7e69000 (setbuf) </span><br><span class="line">[0x804a004] read@GLIBC_2.0 -&gt; 0x8048396 (read@plt+6)</span><br><span class="line">[0x804a008] __gmon_start__ -&gt; 0x80483a6 (__gmon_start__@plt+6)</span><br><span class="line">[0x804a00c] __libc_start_main@GLIBC_2.0 -&gt; 0xf7e1b550 (__libc_start_main)</span><br><span class="line">[0x804a010] write@GLIBC_2.0 -&gt; 0xf7ed8c90 (write)</span><br></pre></td></tr></table></figure>
+
+<h1 id="动态链接数据结构"><a href="#动态链接数据结构" class="headerlink" title="动态链接数据结构"></a>动态链接数据结构</h1><h2 id="动态段-dynamic"><a href="#动态段-dynamic" class="headerlink" title="动态段 .dynamic"></a>动态段 .dynamic</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Sword	d_tag;			<span class="comment">/* Dynamic entry type */</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span></span></span><br><span class="line"><span class="class">    &#123;</span></span><br><span class="line">      Elf32_Word d_val;			<span class="comment">/* Integer value */</span></span><br><span class="line">      Elf32_Addr d_ptr;			<span class="comment">/* Address value */</span></span><br><span class="line">    &#125; d_un;</span><br><span class="line">&#125; Elf32_Dyn;</span><br></pre></td></tr></table></figure>
+
+<p>动态链接器通过d_tag识别动态段信息，动态链接器映射到内存中，首先会对自身重定位，接着会查询ELF可执行文件的.dynamic节DT_NEEDED条目，链接所需的共享库。当一个共享库被装载进内存，链接器会获取动态段信息，并将库信息添加到link_map链表中，Link_map是动态链接器的内部结构，用于跟踪加载的库和库中的符号。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">link_map</span></span></span><br><span class="line"><span class="class">  &#123;</span></span><br><span class="line">    ElfW(Addr) l_addr;		<span class="comment">/* Difference between the address in the ELF</span></span><br><span class="line"><span class="comment">				   file and the addresses in memory.  */</span></span><br><span class="line">    <span class="keyword">char</span> *l_name;		<span class="comment">/* Absolute file name object was found in.  */</span></span><br><span class="line">    ElfW(Dyn) *l_ld;		<span class="comment">/* Dynamic section of the shared object.  */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">link_map</span> *<span class="title">l_next</span>, *<span class="title">l_prev</span>;</span> <span class="comment">/* Chain of loaded objects.  */</span></span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="重定位表-rel-plt"><a href="#重定位表-rel-plt" class="headerlink" title="重定位表.rel_plt"></a>重定位表.rel_plt</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Addr	r_offset;		<span class="comment">/* Address */</span></span><br><span class="line">  Elf32_Word	r_info;			<span class="comment">/* Relocation type and symbol index */</span></span><br><span class="line">&#125; Elf32_Rel;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ELF32_R_SYM(val)		((val) &gt;&gt; 8)</span></span><br></pre></td></tr></table></figure>
+
+<p>r_offset是需要重定位的引用地址，r_info指定必须对其重定位的符号表索引和重定位类型，符号表索引等于r_info&gt;&gt;8，.got.plt重定位类型是R_386_JUMP_SLOT，表示被修正的位置只需要直接填入符号地址即可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> readelf -r pwn-200</span> </span><br><span class="line"></span><br><span class="line">重定位节 &#x27;.rel.plt&#x27; 位于偏移量 0x318 含有 5 个条目：</span><br><span class="line"> 偏移量     信息    类型              符号值      符号名称</span><br><span class="line">0804a000  00000107 R_386_JUMP_SLOT   00000000   setbuf@GLIBC_2.0</span><br><span class="line">0804a004  00000207 R_386_JUMP_SLOT   00000000   read@GLIBC_2.0</span><br><span class="line">0804a008  00000307 R_386_JUMP_SLOT   00000000   __gmon_start__</span><br><span class="line">0804a00c  00000407 R_386_JUMP_SLOT   00000000   __libc_start_main@GLIBC_2.0</span><br><span class="line">0804a010  00000507 R_386_JUMP_SLOT   00000000   write@GLIBC_2.0</span><br></pre></td></tr></table></figure>
+
+<h2 id="符号表-dynsym"><a href="#符号表-dynsym" class="headerlink" title="符号表.dynsym"></a>符号表.dynsym</h2><p>用于符号解析的符号表</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Word	st_name;		<span class="comment">/* Symbol name (string tbl index) */</span></span><br><span class="line">  Elf32_Addr	st_value;		<span class="comment">/* Symbol value */</span></span><br><span class="line">  Elf32_Word	st_size;		<span class="comment">/* Symbol size */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>	st_info;		<span class="comment">/* Symbol type and binding */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>	st_other;		<span class="comment">/* Symbol visibility */</span></span><br><span class="line">  Elf32_Section	st_shndx;		<span class="comment">/* Section index */</span></span><br><span class="line">&#125; Elf32_Sym;</span><br></pre></td></tr></table></figure>
+
+<p>st_name 是字符串表中的偏移</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> readelf -s pwn-200</span></span><br><span class="line"></span><br><span class="line">Symbol table &#x27;.dynsym&#x27; contains 9 entries:</span><br><span class="line">   Num:    Value  Size Type    Bind   Vis      Ndx Name</span><br><span class="line">     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND </span><br><span class="line">     1: 00000000     0 FUNC    GLOBAL DEFAULT  UND setbuf@GLIBC_2.0 (2)</span><br><span class="line">     2: 00000000     0 FUNC    GLOBAL DEFAULT  UND read@GLIBC_2.0 (2)</span><br><span class="line">     3: 00000000     0 NOTYPE  WEAK   DEFAULT  UND __gmon_start__</span><br><span class="line">     4: 00000000     0 FUNC    GLOBAL DEFAULT  UND __libc_start_main@GLIBC_2.0 (2)</span><br><span class="line">     5: 00000000     0 FUNC    GLOBAL DEFAULT  UND write@GLIBC_2.0 (2)</span><br><span class="line">     6: 0804a040     4 OBJECT  GLOBAL DEFAULT   25 stdout@GLIBC_2.0 (2)</span><br><span class="line">     7: 0804863c     4 OBJECT  GLOBAL DEFAULT   15 _IO_stdin_used</span><br><span class="line">     8: 0804a020     4 OBJECT  GLOBAL DEFAULT   25 stdin@GLIBC_2.0 (2)</span><br></pre></td></tr></table></figure>
+
+<h3 id="dl-runtime-resolve-解析"><a href="#dl-runtime-resolve-解析" class="headerlink" title="_dl_runtime_resolve()解析"></a>_dl_runtime_resolve()解析</h3><p>_dl_runtime_resolve()内部调用了 _dl_fixup() 函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//源码里的部分语句</span></span><br><span class="line">_dl_fixup (struct link_map *l, ElfW(Word) reloc_arg)</span><br><span class="line">｛</span><br><span class="line">    <span class="keyword">const</span> PLTREL *<span class="keyword">const</span> reloc = (<span class="keyword">const</span> <span class="keyword">void</span> *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="title">ElfW</span><span class="params">(Sym)</span> *sym </span>= &amp;symtab[ELFW(R_SYM) (reloc-&gt;r_info)];</span><br><span class="line">    assert (ELFW(R_TYPE)(reloc-&gt;r_info) == ELF_MACHINE_JMP_SLOT);</span><br><span class="line">    result = _dl_lookup_symbol_x (strtab + sym-&gt;st_name, l, &amp;sym, l-&gt;l_scope,version, ELF_RTYPE_CLASS_PLT, flags, <span class="literal">NULL</span>);</span><br><span class="line">    value = DL_FIXUP_MAKE_VALUE (result, sym ? (LOOKUP_VALUE_ADDRESS (result) + sym-&gt;st_value) : <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> elf_machine_fixup_plt (l, result, reloc, rel_addr, value);</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
+
+<p>源码解析：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_dl_fixup (struct link_map *l, ElfW(Word) reloc_arg)</span><br></pre></td></tr></table></figure>
+<p>参数与_dl_runtime_resolve()相同，reloc_arg是函数在.rel.plt里的偏移，与.got.plt表的偏移一致</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> PLTREL *<span class="keyword">const</span> reloc = (<span class="keyword">const</span> <span class="keyword">void</span> *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);</span><br></pre></td></tr></table></figure>
+
+<p>获取重定位条目，DT_JMPREL保存指向.rel.plt的地址，reloc_offset即重定位表偏移</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">const</span> <span class="title">ElfW</span><span class="params">(Sym)</span> *sym </span>= &amp;symtab[ELFW(R_SYM) (reloc-&gt;r_info)];</span><br></pre></td></tr></table></figure>
+
+<p>reloc-&gt;r_info从重定位条目的r_info获取重定位符号表的偏移，进而在符号表里查询符号</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">assert (ELFW(R_TYPE)(reloc-&gt;r_info) == ELF_MACHINE_JMP_SLOT);</span><br><span class="line">result = _dl_lookup_symbol_x (strtab + sym-&gt;st_name, l, &amp;sym, l-&gt;l_scope,version, ELF_RTYPE_CLASS_PLT, flags, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+
+<p>确定重定位类型是R_386_JUMP_SLOT，随后根据符号表的信息，去字符串表查找对应字符串</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">value = DL_FIXUP_MAKE_VALUE (result, sym ? (LOOKUP_VALUE_ADDRESS (result) + sym-&gt;st_value) : <span class="number">0</span>);</span><br><span class="line"><span class="keyword">return</span> elf_machine_fixup_plt (l, result, reloc, rel_addr, value);</span><br></pre></td></tr></table></figure>
+
+<p>调用DL_FIXUP_MAKE_VALUE函数获取函数的的实际地址，将函数地址写到got表对应位置</p>
+<p>总结：link_map访问.dynamic，先后获取.rel.plt重定位条目，.dynsym符号表索引，.dynstr函数对应的字符串，最后从动态链接库中查找函数的地址，更新got表，调用这个函数</p>
+<h1 id="RELRO"><a href="#RELRO" class="headerlink" title="RELRO"></a>RELRO</h1><p>RELRO (RELocation Read Only)只读重定位，分为 partial relro 和 full relro</p>
+<ul>
+<li><p>Partial RELRO</p>
+<ul>
+<li>一些节在被动态链接器初始化后标记为只读，包括.init_array .fini_array .jcr .dynamic .got </li>
+<li>.got.plt仍然可写</li>
+</ul>
+</li>
+<li><p>Full RELRO</p>
+<ul>
+<li>拥有 Partial RELRO 的所有特性</li>
+<li>延迟绑定被禁用，所有导入符号在链接的时候就被解析</li>
+<li>整个GOT也被（重新）映射为只读，.got.plt节完全用目标函数的最终地址（将.got和.got.plt合并到一个节.got中）进行了初始化</li>
+<li>由于未启用惰性解析，因此不会初始化GOT [1]和GOT [2]条目。</li>
+</ul>
+</li>
+</ul>
+<h1 id="攻击-dl-runtime-resolve"><a href="#攻击-dl-runtime-resolve" class="headerlink" title="攻击_dl_runtime_resolve()"></a>攻击_dl_runtime_resolve()</h1><p>没有开启RELRO，.dynamic可写，将.dynamic中dynstr指针篡改为一个伪造的fake_dynstr表，在伪造的字符串表中将调用的函数字符串（如read）改为system字符串。_dl_runtime_resolve()回根据获得的字符串作为函数名去查找函数。</p>
+<p>开启Partial RELRO，.dynamic不可写。由于_dl_runtime_resolve的第二个参数重定位偏移没有检查数组越界，利用这一点将重定位偏移改成一个很大的数，使其偏移bss节，在bss节伪造的重定位条目，那么 _dl_runtime_resolve将被欺骗，进而去伪造的重定位条目查询我们想要的system函数。进而伪造system符号信息和字符串信息，最后调用system函数。</p>
+<p>Full RELRO绕过：<a target="_blank" rel="noopener" href="https://darkwing.moe/2019/05/10/Pwn%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015-Full-RELRO%E4%B8%8Elibrary/">https://darkwing.moe/2019/05/10/Pwn%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015-Full-RELRO%E4%B8%8Elibrary/</a></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ul>
+<li><p>《深入理解计算机系统》</p>
+</li>
+<li><p>《linux二进制分析》</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/cdb5cfcb5056">https://www.jianshu.com/p/cdb5cfcb5056</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/170661.html">https://www.freebuf.com/articles/system/170661.html</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/37572651">https://zhuanlan.zhihu.com/p/37572651</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/stackoverflow/advanced-rop/ret2dlresolve">https://ctf-wiki.org/pwn/linux/stackoverflow/advanced-rop/ret2dlresolve</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/5111">https://xz.aliyun.com/t/5111</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>John Doe
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/" title="动态链接-ret2dlresolve">http://example.com/2021/05/18/动态链接-ret2dlresolve/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ROP/" rel="tag"># ROP</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/28/CVE-2012-4969%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="prev" title="CVE-2012-4969漏洞分析">
+      <i class="fa fa-chevron-left"></i> CVE-2012-4969漏洞分析
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E5%99%A8"><span class="nav-text">链接器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5"><span class="nav-text">动态链接</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PLT%E5%92%8CGOT"><span class="nav-text">PLT和GOT</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-text">动态链接数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E6%AE%B5-dynamic"><span class="nav-text">动态段 .dynamic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E5%AE%9A%E4%BD%8D%E8%A1%A8-rel-plt"><span class="nav-text">重定位表.rel_plt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E8%A1%A8-dynsym"><span class="nav-text">符号表.dynsym</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dl-runtime-resolve-%E8%A7%A3%E6%9E%90"><span class="nav-text">_dl_runtime_resolve()解析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RELRO"><span class="nav-text">RELRO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%BB%E5%87%BB-dl-runtime-resolve"><span class="nav-text">攻击_dl_runtime_resolve()</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hqz66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hqz66" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/1219089065@gmail.com" title="E-Mail → 1219089065@gmail.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">46k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">42 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

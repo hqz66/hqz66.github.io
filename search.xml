@@ -984,12 +984,10 @@
 <p>总结：</p>
 <p>OWA 192.168.176.138为域控，STU1为本机，ROOT-TVI862UBEH 192.168.176.141为域成员，域管理员用户为administrator和liukaifeng01</p>
 <h3 id="权限提升"><a href="#权限提升" class="headerlink" title="权限提升"></a>权限提升</h3><p>cs提权，获得system权限</p>
-<img src="https://i.loli.net/2021/08/18/eEWuxvO5jy7B4TC.png" style="zoom:80%;" />
-
-<img src="https://i.loli.net/2021/08/18/3G27LHneE4jfBDt.png" style="zoom:80%;" />
+<img src="https://i.loli.net/2021/08/18/pNnEfWsMmSxkteT.png" style="zoom:80%;" />
 
 <h3 id="横向移动"><a href="#横向移动" class="headerlink" title="横向移动"></a>横向移动</h3><p>运行mimikatz，获取密钥</p>
-<img src="https://i.loli.net/2021/08/18/kD5HmGzohwb6BSF.png" style="zoom:80%;" />
+<img src="https://i.loli.net/2021/08/18/3G27LHneE4jfBDt.png" style="zoom:80%;" />
 
 <img src="https://i.loli.net/2021/08/18/TXAED5l9jhacmMS.png" style="zoom:80%;" />
 
@@ -999,7 +997,9 @@
 
 <p>其他两条主机均开放445端口</p>
 <p>新建smb监听器</p>
-<img src="https://i.loli.net/2021/08/18/pNnEfWsMmSxkteT.png" style="zoom:80%;" />
+<img src="https://i.loli.net/2021/08/18/eEWuxvO5jy7B4TC.png" style="zoom:80%;" />
+
+<img src="https://i.loli.net/2021/08/18/kD5HmGzohwb6BSF.png" style="zoom:80%;" />
 
 <p>用psexec和刚才窃取的令牌对域控进行smb连接</p>
 <img src="https://i.loli.net/2021/08/18/AlzgQmJ9L1t2Yau.png" style="zoom:80%;" />

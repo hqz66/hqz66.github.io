@@ -335,7 +335,7 @@
 <p>plt每个plt条目大小为0x10，首条指令为跳转到对应的got表项地址，got表里的地址为函数在内存中的真正地址</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">08048380 &lt;setbuf@plt&gt;:</span><br><span class="line"> 8048380:	ff 25 00 a0 04 08    	jmp    *0x804a000</span><br><span class="line"> 8048386:	68 00 00 00 00       	push   $0x0</span><br><span class="line"> 804838b:	e9 e0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br><span class="line"></span><br><span class="line">08048390 &lt;read@plt&gt;:</span><br><span class="line"> 8048390:	ff 25 04 a0 04 08    	jmp    *0x804a004</span><br><span class="line"> 8048396:	68 08 00 00 00       	push   $0x8</span><br><span class="line"> 804839b:	e9 d0 ff ff ff       	jmp    8048370 &lt;setbuf@plt-0x10&gt;</span><br></pre></td></tr></table></figure>
 
-<p>在read@plt地址0x8048390下断点，运行程序，程序跳转到<a href="mailto:&#x72;&#101;&#x61;&#100;&#64;&#103;&#x6f;&#x74;&#x2e;&#x70;&#108;&#x74;">&#x72;&#101;&#x61;&#100;&#64;&#103;&#x6f;&#x74;&#x2e;&#x70;&#108;&#x74;</a>地址。</p>
+<p>在read@plt地址0x8048390下断点，运行程序，程序跳转到<a href="mailto:&#x72;&#101;&#x61;&#x64;&#64;&#103;&#x6f;&#116;&#x2e;&#112;&#108;&#x74;">&#x72;&#101;&#x61;&#x64;&#64;&#103;&#x6f;&#116;&#x2e;&#112;&#108;&#x74;</a>地址。</p>
 <ul>
 <li>由于是第一次调用read函数，got表里并没有填充read函数的真实地址，需要调用解析函数解析实际地址填充到got表里，而这个解析函数就由plt[0]调用，所以程序跳转回自己的plt表第二条指令</li>
 <li>0x08048396将read函数自身在.rel.plt表的偏移压栈（实际是偏移*8），作为解析函数的参数，随后跳转到plt[0]-0x8048370</li>
